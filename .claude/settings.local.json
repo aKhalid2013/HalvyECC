@@ -1,12 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(powershell -Command \"New-Item -ItemType SymbolicLink -Path ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.claude\\\\skills'' -Target ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.agent-skills'' 2>&1; New-Item -ItemType SymbolicLink -Path ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.agent\\\\skills'' -Target ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.agent-skills'' 2>&1\")",
-      "Bash(powershell -Command \"cmd /c mklink /J ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.claude\\\\skills'' ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.agent-skills'' 2>&1; cmd /c mklink /J ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.agent\\\\skills'' ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.agent-skills'' 2>&1\")",
       "Bash(node scripts/generate-po-context.js)",
-      "Read(//d/Work/02_Projects/everything-claude-code/rules/**)",
-      "Bash(cp -r \"D:/Work/02_Projects/everything-claude-code/rules/common\" \"D:/Work/02_Projects/Halvy_ECC/.claude/rules/common\")",
-      "Bash(cp -r \"D:/Work/02_Projects/everything-claude-code/rules/typescript\" \"D:/Work/02_Projects/Halvy_ECC/.claude/rules/typescript\")"
+      "Bash(powershell -Command \"Remove-Item -Force ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.git\\\\index.lock'' -ErrorAction SilentlyContinue; Write-Host ''done''\")"
     ]
   }
 }
