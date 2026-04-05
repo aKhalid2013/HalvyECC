@@ -43,6 +43,19 @@ Each teammate works on its own branch: feat/SPEC-{NNN}-slug
 - postgres-patterns — Supabase/PostgreSQL query optimization, indexes, RLS
 - api-design — REST conventions, pagination, error envelopes
 - tdd-workflow — Full TDD loop enforcement
+- database-migrations — Safe schema changes, zero-downtime patterns, Supabase migration workflow
+- security-review — Auth, RLS, input validation, secrets, rate limiting checklists
+- security-scan — Audit .claude/ config for misconfigs and injection risks (AgentShield)
+
+## Contexts (behavioral mode switching)
+- `.claude/contexts/dev.md` — Active coding mode: write first, explain after, atomic commits
+- `.claude/contexts/review.md` — PR review mode: severity-grouped findings, Halvy-specific checks
+- `.claude/contexts/research.md` — Discovery mode: read before writing, cite sources, present trade-offs
+
+Usage: Reference a context at the start of a task — e.g. "Use dev context" or "Use review context for this PR."
 
 ## MCP Servers
-- Supabase: for querying schema and RLS policies directly
+Configured in `~/.claude/settings.json` under `mcpServers`:
+- **supabase** — Query schema, RLS policies, run SQL directly. Replace `YOUR_SUPABASE_PROJECT_REF` with your project ref before using.
+- **memory** — Persist facts across sessions (approved specs, phase state, architectural decisions)
+- **sequential-thinking** — Chain-of-thought reasoning for complex planning tasks

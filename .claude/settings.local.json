@@ -2,7 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(node scripts/generate-po-context.js)",
-      "Bash(powershell -Command \"Remove-Item -Force ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.git\\\\index.lock'' -ErrorAction SilentlyContinue; Write-Host ''done''\")"
+      "Bash(powershell -Command \"Remove-Item -Force ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC\\\\.git\\\\index.lock'' -ErrorAction SilentlyContinue; Set-Location ''D:\\\\Work\\\\02_Projects\\\\Halvy_ECC''; git add CLAUDE.md .claude/settings.local.json .claude/contexts/ .claude/rules/mobile/ .agent-skills/database-migrations/ .agent-skills/security-review/ .agent-skills/security-scan/; git status\")"
     ]
   }
 }
