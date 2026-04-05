@@ -33,6 +33,7 @@ Each criterion MUST be binary (pass/fail) and testable by the spec-verifier.
 - [ ] AC-1: [Specific, measurable criterion]
 - [ ] AC-2: [Specific, measurable criterion]
 - [ ] AC-3: [Specific, measurable criterion]
+<!-- If this spec modifies package.json deps, babel.config.js, metro.config.js, tailwind.config.js, or app.config.ts: include bundling verification ACs: npx expo export --platform {ios,android,web} exits 0 -->
 
 ## 4. Data Model
 

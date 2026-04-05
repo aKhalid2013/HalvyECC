@@ -14,6 +14,33 @@ description: >
 - TypeScript strict mode
 - FlashList (not FlatList) for all scrollable lists
 
+## Explicit Dependencies (SDK 54 — must be listed, never assume transitive)
+These are NOT guaranteed as transitive installs — add them explicitly in package.json:
+- `babel-preset-expo` as a **devDependency** (pin to `~54.0.x` matching SDK version)
+- `react-native-worklets` — required peer dep of `react-native-reanimated@4.x`; install via `npx expo install react-native-worklets`
+- `react-native-web`, `react-dom`, `@expo/metro-runtime` — required for web platform support
+
+## babel.config.js — Critical Pattern
+`nativewind/babel` returns `{ plugins: [...] }` — it is a **preset**, not a plugin.
+Place it in `presets[]` or Metro will throw: `.plugins is not a valid Plugin property`
+```js
+// CORRECT
+presets: ['babel-preset-expo', 'nativewind/babel']
+plugins: [['module-resolver', { alias: { '@': './src' } }]]
+
+// WRONG — causes silent build failures
+plugins: ['nativewind/babel']
+```
+
+## Build Verification
+`tsc` and `jest` do NOT validate Metro/Babel transforms. Always run before merging:
+```sh
+npx expo export --platform ios
+npx expo export --platform android
+npx expo export --platform web
+```
+Zero test files → jest exits 0. This is NOT a build confirmation.
+
 ## Feature File Structure
 src/features/{name}/
   components/   — Feature-specific UI components

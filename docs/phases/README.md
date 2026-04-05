@@ -97,6 +97,9 @@
 ```
 □ npx tsc --noEmit passes
 □ npx jest passes
+□ npx expo export --platform ios exits 0
+□ npx expo export --platform android exits 0
+□ npx expo export --platform web exits 0
 □ App launches on iOS, Android, and web without errors
 □ Google OAuth sign-in works end-to-end on device
 □ Magic Link sign-in works end-to-end

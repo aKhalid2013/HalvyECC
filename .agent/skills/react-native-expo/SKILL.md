@@ -14,8 +14,51 @@ description: >
 - NativeWind v4 (Tailwind CSS syntax on RN components)
 - TypeScript strict mode — no `any`
 - FlashList (not FlatList) for all scrollable lists
-- Reanimated 3 for all animations (no Animated API)
+- Reanimated 4 for all animations (no Animated API from react-native core)
 - lucide-react-native for all icons (no mixing libraries)
+
+## Explicit Dependencies (SDK 54 — must be listed, never assume transitive)
+These packages are NOT guaranteed as transitive installs in Expo SDK 54. Always add explicitly:
+```json
+"dependencies": {
+  "react-native-web": "^0.21.0",
+  "react-dom": "19.x",
+  "@expo/metro-runtime": "~6.x"
+},
+"devDependencies": {
+  "babel-preset-expo": "~54.0.x"
+}
+```
+- `react-native-worklets` — required peer dep of `react-native-reanimated@4.x`. Install via `npx expo install react-native-worklets`
+- `babel-preset-expo` — must be an **explicit devDependency** in SDK 54; no longer guaranteed transitive
+
+## babel.config.js — Canonical Pattern
+`nativewind/babel` is a **preset** (returns `{ plugins: [...] }`) — it MUST go in `presets[]`, never `plugins[]`.
+Putting it in `plugins[]` causes: `.plugins is not a valid Plugin property` at bundle time.
+```js
+module.exports = function (api) {
+  api.cache(true);
+  return {
+    presets: [
+      'babel-preset-expo',
+      'nativewind/babel',   // ← PRESET, not a plugin
+    ],
+    plugins: [
+      ['module-resolver', { root: ['./'], alias: { '@': './src' } }],
+    ],
+  };
+};
+```
+
+## Build Verification (mandatory before declaring infra complete)
+`tsc --noEmit` and `jest` catch type errors but NOT Metro/Babel pipeline errors.
+Always run full bundling test across all three platforms before merging:
+```sh
+npx expo export --platform ios
+npx expo export --platform android
+npx expo export --platform web
+```
+A passing `tsc` + passing `jest` with zero test files does NOT mean the app builds.
 
 ## Feature File Structure
 ```
