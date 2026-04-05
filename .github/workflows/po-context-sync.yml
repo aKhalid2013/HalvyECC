@@ -3,7 +3,7 @@ name: PO Context Sync
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - 'docs/specs/**'
       - 'docs/phases/**'
