@@ -29,10 +29,20 @@ Each teammate works on its own branch: feat/SPEC-{NNN}-slug
 - spec-verifier — Post-dev implementation vs spec verification
 
 ## Skills Available
+
+### Halvy Core Skills (project-specific)
 - po-agent — Product Owner workflow
 - spec-verifier — Verification workflow
-- expo-mobile — Expo/React Native patterns
 - halvy-context — Project context loader
+- halvy-expense-logic — Living balance model, split types, integer cents, debt graph
+- react-native-expo — RN/Expo patterns, NativeWind v4, FlashList, Reanimated 3, safe areas
+- expo-mobile — Expo/React Native quick-reference patterns
+- mobile-e2e — Detox + Maestro E2E testing for mobile flows
+
+### From ECC (general-purpose)
+- postgres-patterns — Supabase/PostgreSQL query optimization, indexes, RLS
+- api-design — REST conventions, pagination, error envelopes
+- tdd-workflow — Full TDD loop enforcement
 
 ## MCP Servers
 - Supabase: for querying schema and RLS policies directly
