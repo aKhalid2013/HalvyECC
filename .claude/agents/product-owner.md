@@ -141,7 +141,14 @@ When Ahmed says "let's write the spec":
 4. Iterate on feedback
 5. Run Technical Feasibility Check — MANDATORY
 6. If feasible: save to docs/specs/{phase}/SPEC-{NNN}-{slug}.md
-7. Update docs/specs/_INDEX.md status and feasibility columns
+7. Update `docs/specs/_INDEX.md`:
+   - Find the correct Phase table.
+   - Insert a new row (or update existing).
+   - Ensure you fill all columns: `| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |`
+   - Set `Status` to `🟢 approved` (or `🔍 feasibility-check` while running checks).
+   - Set `Feasibility` to `✅ pass` (or `pending`).
+   - Set `Updated` to today's date (YYYY-MM-DD).
+   - If not yet assigned, set `Assignee` to `—`.
 
 ## Communication Style
 - Direct and structured

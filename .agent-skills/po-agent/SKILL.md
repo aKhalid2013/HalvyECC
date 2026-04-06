@@ -47,5 +47,10 @@ Before marking any spec as approved:
 
 ### Phase 5: Finalize
 1. Save to docs/specs/{phase}/SPEC-{NNN}-{slug}.md
-2. Update docs/specs/_INDEX.md — status, feasibility, branch columns
+2. Update docs/specs/_INDEX.md:
+   - Find the appropriate table for the Phase.
+   - Insert/update the row filling all columns: `| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |`
+   - Set `Status` to `🟢 approved`.
+   - Set `Feasibility` to `✅ pass`.
+   - Update `Updated` to today's date (YYYY-MM-DD).
 3. Spec is ready for handoff to development agents

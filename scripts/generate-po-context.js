@@ -20,6 +20,8 @@ function extractSpecIndex() {
   const lines = fs.readFileSync(INDEX, 'utf8').split('\n');
   return lines
     .filter(l => /^(#|##|\|)/.test(l.trim()))
+    // Filter out rows that represent empty states like "No specs yet"
+    .filter(l => !/\|\s*—\s*\|\s*No specs yet\s*\|/.test(l.trim()))
     .join('\n');
 }
 
@@ -37,29 +39,45 @@ function extractVerificationSummaries() {
   walk(REPORTS);
   if (!reports.length) return '> No verification reports found yet.\n';
 
-  return reports.map(f => {
+  let totalSpecs = reports.length;
+  let passed = 0;
+  let partial = 0;
+  let failed = 0;
+
+  const summaries = reports.map(f => {
     const content = fs.readFileSync(f, 'utf8');
     const specId  = content.match(/SPEC-(\d+)/)?.[0] ?? path.basename(f);
     const verdict = content.match(/\*\*Verdict:\*\*\s*(.+)/)?.[1] ?? 'unknown';
+
+    if (verdict.includes('PASS') || verdict.includes('✅')) passed++;
+    else if (verdict.includes('PARTIAL') || verdict.includes('⚠️')) partial++;
+    else if (verdict.includes('FAIL') || verdict.includes('❌')) failed++;
+
     const issues  = (content.match(/\|\s*(FAIL|PARTIAL)\s*\|.+/g) ?? [])
                       .map(l => '  - ' + l.trim()).join('\n');
-    return '### ' + specId + '\n**Verdict:** ' + verdict + '\n' + (issues || '  *(no open issues)*');
-  }).join('\n\n');
+    return '- **' + specId + '** (' + verdict.trim() + ')' + (issues ? '\n' + issues : '');
+  }).join('\n');
+
+  return `**Total Verifications:** ${totalSpecs} (✅ ${passed} | ⚠️ ${partial} | ❌ ${failed})\n\n${summaries}`;
 }
 
 // -- 3. Phase Completion
 function extractPhaseCompletion() {
   if (!fs.existsSync(PHASES)) return '> docs/phases/README.md not found.\n';
   const text   = fs.readFileSync(PHASES, 'utf8');
-  const phases = text.split(/^## Phase \d/m).slice(1);
-  const phaseHeaders = [...text.matchAll(/^## (Phase \d[^\n]*)/gm)].map(m => m[1]);
+  // Match phase headings flexibly (e.g. ## Phase 1, ## Phase 1:, ## Phase 1 -)
+  const phaseHeaders = [...text.matchAll(/^## (Phase \d.*)/gm)].map(m => m[1]);
+  if (phaseHeaders.length === 0) return '> No phases found in docs/phases/README.md.\n';
+
+  const phases = text.split(/^## Phase \d.*/m).slice(1);
 
   return phaseHeaders.map((header, i) => {
     const block = phases[i] ?? '';
-    const done  = (block.match(/- \[x\]/gi) ?? []).length;
-    const total = (block.match(/- \[(x| )\]/gi) ?? []).length;
+    // Support various list formats: - [x], * [x], - [x], etc.
+    const done  = (block.match(/^[\s\-\*]*\[[xX]\]/gm) ?? []).length;
+    const total = (block.match(/^[\s\-\*]*\[[xX ]\]/gm) ?? []).length;
     const pct   = total ? Math.round((done / total) * 100) : 0;
-    return '| ' + header + ' | ' + done + '/' + total + ' | ' + pct + '% |';
+    return '| ' + header.trim() + ' | ' + done + '/' + total + ' | ' + pct + '% |';
   }).join('\n');
 }
 

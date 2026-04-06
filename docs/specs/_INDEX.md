@@ -11,30 +11,30 @@
 
 ## Phase 1 — Foundation
 
-| ID | Title | Status | Priority | Complexity | Feasibility | Branch |
-|----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |
+|----|-------|--------|----------|------------|-------------|--------|----------|---------|
+| — | No specs yet | — | — | — | — | — | — | — |
 
 ## Phase 2 — Groups & Chat
 
-| ID | Title | Status | Priority | Complexity | Feasibility | Branch |
-|----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |
+|----|-------|--------|----------|------------|-------------|--------|----------|---------|
+| — | No specs yet | — | — | — | — | — | — | — |
 
 ## Phase 3 — Expenses & Balances
 
-| ID | Title | Status | Priority | Complexity | Feasibility | Branch |
-|----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |
+|----|-------|--------|----------|------------|-------------|--------|----------|---------|
+| — | No specs yet | — | — | — | — | — | — | — |
 
 ## Phase 4 — AI Entry
 
-| ID | Title | Status | Priority | Complexity | Feasibility | Branch |
-|----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |
+|----|-------|--------|----------|------------|-------------|--------|----------|---------|
+| — | No specs yet | — | — | — | — | — | — | — |
 
 ## Phase 5 — Payments & Polish
 
-| ID | Title | Status | Priority | Complexity | Feasibility | Branch |
-|----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |
+|----|-------|--------|----------|------------|-------------|--------|----------|---------|
+| — | No specs yet | — | — | — | — | — | — | — |

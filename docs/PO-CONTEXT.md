@@ -1,5 +1,5 @@
 # PO-CONTEXT — Halvy Live Progress Snapshot
-_Generated: 2026-04-06 09:00 UTC — do not edit manually_
+_Generated: 2026-04-06 13:14 UTC — do not edit manually_
 
 ---
 
@@ -8,25 +8,20 @@ _Generated: 2026-04-06 09:00 UTC — do not edit manually_
 # Halvy Feature Specs — Registry
 ## Status Legend
 ## Phase 1 — Foundation
-| ID | Title | Status | Priority | Complexity | Feasibility | Branch |
-|----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |
+|----|-------|--------|----------|------------|-------------|--------|----------|---------|
 ## Phase 2 — Groups & Chat
-| ID | Title | Status | Priority | Complexity | Feasibility | Branch |
-|----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |
+|----|-------|--------|----------|------------|-------------|--------|----------|---------|
 ## Phase 3 — Expenses & Balances
-| ID | Title | Status | Priority | Complexity | Feasibility | Branch |
-|----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |
+|----|-------|--------|----------|------------|-------------|--------|----------|---------|
 ## Phase 4 — AI Entry
-| ID | Title | Status | Priority | Complexity | Feasibility | Branch |
-|----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |
+|----|-------|--------|----------|------------|-------------|--------|----------|---------|
 ## Phase 5 — Payments & Polish
-| ID | Title | Status | Priority | Complexity | Feasibility | Branch |
-|----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| ID | Title | Status | Priority | Complexity | Feasibility | Branch | Assignee | Updated |
+|----|-------|--------|----------|------------|-------------|--------|----------|---------|
 
 ---
 
