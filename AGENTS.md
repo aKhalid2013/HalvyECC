@@ -5,7 +5,7 @@ Halvy: chat-first social expense-splitting app for Gen Z.
 "A chat app with financial intelligence, not a finance app with chat."
 
 ## Stack
-Expo SDK 52 (React Native 0.76) · React 18 · Expo Router v4 · Supabase · NativeWind v4 · Zustand · Gemini API
+Expo SDK 54 (React Native 0.81.5) · React 19 · Expo Router v6 · Supabase · NativeWind v4 · Zustand · Gemini API
 Testing: Jest + React Native Testing Library + Detox (E2E)
 
 ## Commands
@@ -25,7 +25,7 @@ npm run typecheck      # TypeScript strict
 - All monetary values stored and computed in integer cents. No floats in financial logic.
 - FlashList over FlatList for chat and activity lists.
 - Gemini API calls go through the Supabase ai-proxy Edge Function only. Never call Gemini directly from the client.
-- React Native 0.76 New Architecture (Fabric/TurboModules) is enabled by default.
+- React Native 0.81 New Architecture (Fabric/TurboModules) is enabled in this project (`newArchEnabled: true`).
 
 ## Code Style
 - TypeScript strict. No any.

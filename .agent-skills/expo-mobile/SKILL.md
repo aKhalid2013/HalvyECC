@@ -8,18 +8,19 @@ description: >
 # Expo / React Native Development — Halvy Patterns
 
 ## Project Setup
-- Expo SDK 52 managed workflow with Expo Router v4
-- React Native 0.76 (New Architecture enabled by default)
-- React 18
+- Expo SDK 54 managed workflow with Expo Router v6
+- React Native 0.81 (New Architecture enabled by default)
+- React 19
 - NativeWind v4 (Tailwind CSS syntax)
 - Supabase backend
 - TypeScript strict mode
 - FlashList (not FlatList) for all scrollable lists
 
-## Explicit Dependencies (SDK 52 — must be listed, never assume transitive)
+## Explicit Dependencies (SDK 54 — must be listed, never assume transitive)
 These are NOT guaranteed as transitive installs — add them explicitly in package.json:
-- `babel-preset-expo` as a **devDependency** (pin to `~52.0.x` matching SDK version)
+- `babel-preset-expo` as a **devDependency** (pin to `~54.0.x` matching SDK version)
 - `react-native-worklets` — required peer dep of `react-native-reanimated@4.x`; install via `npx expo install react-native-worklets`
+- `react-native-reanimated` — install explicitly for SDK 54 compatibility; use the Expo-matched version via `npx expo install react-native-reanimated`
 - `react-native-web`, `react-dom`, `@expo/metro-runtime` — required for web platform support
 
 ## babel.config.js — Critical Pattern
