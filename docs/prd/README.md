@@ -274,8 +274,8 @@ User reputation and reliability scoring is deferred to a future version. The exa
 
 | Layer | Technology | Role |
 |---|---|---|
-| Cross-Platform Shell | Expo (React Native) | Single codebase targeting iOS, Android, and web |
-| UI & Styling | Tailwind CSS (via NativeWind) + Reanimated | Consistent styling and native animations |
+| Cross-Platform Shell | Expo SDK 52 (React Native 0.76) | Single codebase targeting iOS, Android, and web. Fabric enabled by default. |
+| UI & Styling | NativeWind v4 (Tailwind CSS) + Reanimated 3 | Consistent styling and native animations |
 | Backend & Database | Supabase (PostgreSQL) | Relational financial data, RLS, real-time WebSocket subscriptions |
 | AI & Parsing | Gemini API | Multimodal receipt OCR and voice dictation parsing |
 

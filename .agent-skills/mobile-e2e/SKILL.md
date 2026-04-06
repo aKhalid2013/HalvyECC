@@ -15,6 +15,9 @@ description: >
 - **Jest** for unit and integration tests
 - **React Native Testing Library** for component tests
 
+## React Native 0.76 & Expo 52 Considerations
+- React Native 0.76 enables the New Architecture (Fabric) by default. Detox supports this, but ensure components have proper accessibility props (like `accessible={true}`) to be easily queryable if `testID`s fail.
+
 ## Critical User Flows to Cover (Phase 5 exit criteria)
 1. `create_expense_manual.yaml` — Manual expense → card in chat → items unassigned
 2. `assign_items.yaml` — Member assigns items → balance updates live

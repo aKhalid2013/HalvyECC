@@ -10,27 +10,29 @@ description: >
 # React Native / Expo — Halvy Patterns
 
 ## Project Setup
-- Expo SDK managed workflow with Expo Router v3
+- Expo SDK 52 managed workflow with Expo Router v4
+- React Native 0.76 (New Architecture enabled by default)
+- React 18
 - NativeWind v4 (Tailwind CSS syntax on RN components)
 - TypeScript strict mode — no `any`
 - FlashList (not FlatList) for all scrollable lists
-- Reanimated 4 for all animations (no Animated API from react-native core)
+- Reanimated 3 for all animations (no Animated API from react-native core)
 - lucide-react-native for all icons (no mixing libraries)
 
-## Explicit Dependencies (SDK 54 — must be listed, never assume transitive)
-These packages are NOT guaranteed as transitive installs in Expo SDK 54. Always add explicitly:
+## Explicit Dependencies (SDK 52 — must be listed, never assume transitive)
+These packages are NOT guaranteed as transitive installs in Expo SDK 52. Always add explicitly:
 ```json
 "dependencies": {
-  "react-native-web": "^0.21.0",
-  "react-dom": "19.x",
-  "@expo/metro-runtime": "~6.x"
+  "react-native-web": "~0.19.10",
+  "react-dom": "18.x",
+  "@expo/metro-runtime": "~3.x"
 },
 "devDependencies": {
-  "babel-preset-expo": "~54.0.x"
+  "babel-preset-expo": "~52.0.x"
 }
 ```
-- `react-native-worklets` — required peer dep of `react-native-reanimated@4.x`. Install via `npx expo install react-native-worklets`
-- `babel-preset-expo` — must be an **explicit devDependency** in SDK 54; no longer guaranteed transitive
+- `react-native-worklets-core` — required peer dep of `react-native-reanimated`. Install via `npx expo install react-native-worklets-core`
+- `babel-preset-expo` — must be an **explicit devDependency** in SDK 52; no longer guaranteed transitive
 
 ## babel.config.js — Canonical Pattern
 `nativewind/babel` is a **preset** (returns `{ plugins: [...] }`) — it MUST go in `presets[]`, never `plugins[]`.

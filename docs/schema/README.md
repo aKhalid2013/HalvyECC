@@ -1,7 +1,7 @@
 # schema.md
 
 **Project:** Halvy — Next-Gen Social Expense Splitting Ecosystem
-**Version:** 5.0
+**Version:** 5.1
 **Database:** Supabase (PostgreSQL)
 
 > **v2.0 changes:** Replaced lock/settle/flag model with a unified living ledger. Removed `expense_status`, `settled_at`, `flag_expires_at`. Removed `expense_splits.is_settled`. Removed `settlements` table. Added `payments` table. Added `mentions`. Item assignment is collaborative.
@@ -11,6 +11,8 @@
 > **v4.0 changes:** Added `phone`, `email`, `created_by_user_id` to `placeholders`. Added claiming indexes and placeholder claim check trigger.
 
 > **v5.0 changes:** Redesigned `standing_orders` table — replaced `recurrence` enum with `recurrence_every` (integer) + `recurrence_unit` (enum) for fully custom intervals. Added `split_mode` enum field to distinguish fixed vs. collaborative splits. Added `payer_user_id` field. Updated RLS row for standing_orders. Updated triggers table. Updated assumptions table.
+
+> **v5.1 changes:** General review for AI context limits and "latest in the market" alignment for agent workflows. No schema breakages.
 
 ---
 
