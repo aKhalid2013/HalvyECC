@@ -50,3 +50,27 @@ Post-dev: spec-verifier agent checks implementation vs spec before merge.
 - Phase roadmap: docs/phases/
 - AI integration: docs/ai-integration/
 - Feature specs: docs/specs/
+
+## Development Gates
+
+The /plan → /tdd workflow is human-approval-gated.
+Commands are atomic units. They do NOT chain automatically.
+
+### /plan contract
+Output: writes docs/plans/SPEC-NNN-tasks.md
+Then: prints ✅ PLAN COMPLETE stop message
+Then: HALTS — no code, no src/ files, no tests, no further action
+Gate: developer reviews task list → checks approval checklist → runs /tdd
+
+### /tdd contract
+Syntax: /tdd TASK-N SPEC-NNN
+Reads: docs/plans/SPEC-NNN-tasks.md (the TASK-N entry only)
+Does: implements exactly one task using TDD (RED → GREEN → REFACTOR)
+Then: marks TASK-N Status: ✅ done in the task list file
+Then: HALTS — prints "TASK-N complete. Run /tdd TASK-N+1 SPEC-NNN."
+Does NOT: chain to the next task automatically
+
+### Naming rule
+Tasks inside docs/plans/ are called TASK-1, TASK-2, ... TASK-N.
+The word "Phase" is NEVER used for tasks.
+"Phase" belongs only in docs/phases/ (app release strategy).
