@@ -1,6 +1,6 @@
 # Development Workflow
 
-> This file extends common/git-workflow.md with the full feature
+> This file extends [common/git-workflow.md](./git-workflow.md) with the full feature
 > development process that runs before git operations.
 
 ## Feature Implementation Workflow
@@ -40,7 +40,7 @@ runs a /tdd command. The agent never bridges this gap on its own.
 
 Run: /tdd TASK-N SPEC-NNN
 
-The tdd-guide agent will:
+The tdd-workflow skill will:
   1. Read TASK-N from docs/plans/SPEC-NNN-tasks.md
   2. Read only the files listed in that task's "Files" section
   3. Write failing tests for that task's acceptance criteria (RED)

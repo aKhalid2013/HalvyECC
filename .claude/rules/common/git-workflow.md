@@ -2,12 +2,13 @@
 
 ## Commit Message Format
 ```
-<type>: <description>
+<type>(scope): <description>
 
 <optional body>
 ```
 
 Types: feat, fix, refactor, docs, test, chore, perf, ci
+Scope: feature name, spec ID (e.g. SPEC-001), or component (e.g. auth, chat)
 
 Note: Attribution disabled globally via ~/.claude/settings.json.
 

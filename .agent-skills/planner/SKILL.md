@@ -28,7 +28,7 @@ is printed. This is not negotiable.
 
 - The spec file at: docs/specs/{phase-folder}/SPEC-NNN-{slug}.md
   If the spec file path is not known, search docs/specs/ for SPEC-NNN.
-- Scan of relevant src/ directories to understand existing code
+- Scan of relevant `src/` and `app/` directories to understand existing code
 
 ## Workflow
 
@@ -52,7 +52,7 @@ RULE T2: Single TDD session. Implementable in one focused session.
 RULE T3: Self-contained context. A fresh agent with no memory of other
          tasks in this spec can implement this task by reading only:
          (a) this task's entry in the task list file, and
-         (b) the relevant files in src/.
+         (b) the relevant files in `src/` and `app/`.
          It must NOT need to read other tasks to understand this one.
 RULE T4: Own acceptance criteria. Each task lists a subset of the spec's
          acceptance criteria that it satisfies.
