@@ -13,7 +13,7 @@ origin: ECC + Halvy
 
 This skill produces a PLAN DOCUMENT and then STOPS.
 It does NOT write source code.
-It does NOT create files in src/.
+It does NOT create files in src/ or app/.
 It does NOT run tests.
 It does NOT proceed to implementation.
 The session ENDS after the plan document is written and the stop message
@@ -149,5 +149,5 @@ Next step: review the task list, check the approval checklist, then run:
 ⛔ This session ends here. Awaiting your approval.
 ---
 
-STOP. Do not write any code. Do not create any files in src/. Do not run
-any commands. The session is over.
+STOP. Do not write any code. Do not create any files in src/ or app/. Do not
+run any commands. The session is over.
