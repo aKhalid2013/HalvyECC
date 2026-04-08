@@ -1,27 +1,12 @@
-# Development Context
+# Dev Context — Active Coding Mode
 
-Mode: Active development
-Focus: Implementation, coding, building features
-
-## Behavior
-- Write code first, explain after
-- Prefer working solutions over perfect solutions
-- Run tests after changes
-- Keep commits atomic
-
-## Priorities
-1. Get it working
-2. Get it right
-3. Get it clean
-
-## Tools to favor
-- Edit, Write for code changes
-- Bash for running tests/builds
-- Grep, Glob for finding code
-
-## Halvy-specific defaults
-- All monetary values in integer cents — never floats
-- FlashList over FlatList — always
-- Named exports only (except screen defaults)
-- Zod for validation at all system boundaries
-- TypeScript strict — no `any`
+- Write code first, explain only if asked
+- Atomic commits: one logical change per commit
+- Follow TDD: write failing test, implement, refactor
+- Keep files under 300 lines; split at 200
+- Run typecheck and lint before committing
+- Reference the spec's acceptance criteria as your checklist
+- Use `halvy-context` skill to load relevant docs before starting
+- All monetary values in integer cents — no floats
+- Supabase RLS on every table — no exceptions
+- Gemini API calls via ai-proxy Edge Function only — never direct

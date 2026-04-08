@@ -1,18 +1,16 @@
-name: PO Context Sync
+name: Process Feedback Sync
 
 on:
   workflow_dispatch:
   push:
     branches: [master, main]
     paths:
-      - 'docs/specs/**'
-      - 'docs/phases/**'
-      - 'docs/prd/**'
+      - 'feedback-logs/**'
   schedule:
-    - cron: '0 8 * * 1'  # Every Monday at 08:00 UTC
+    - cron: '0 9 * * 5'
 
 jobs:
-  generate:
+  digest:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -23,13 +21,13 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Generate PO-CONTEXT.md
-        run: node scripts/generate-po-context.js
+      - name: Generate PROCESS-FEEDBACK.md
+        run: node scripts/generate-process-feedback.js
 
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/PO-CONTEXT.md
-          git diff --staged --quiet || git commit -m "chore: regenerate PO-CONTEXT.md [skip ci]"
+          git add docs/PROCESS-FEEDBACK.md
+          git diff --staged --quiet || git commit -m "chore: regenerate PROCESS-FEEDBACK.md [skip ci]"
           git push

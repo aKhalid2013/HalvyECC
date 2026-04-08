@@ -11,7 +11,9 @@ const path = require('path');
 const ROOT    = path.resolve(__dirname, '..');
 const OUTPUT  = path.join(ROOT, 'docs', 'PO-CONTEXT.md');
 const INDEX   = path.join(ROOT, 'docs', 'specs', '_INDEX.md');
-const PHASES  = path.join(ROOT, 'docs', 'phases', 'README.md');
+const PHASES_PRIMARY = path.join(ROOT, 'docs', 'phases', 'README.md');
+const PHASES_ALT     = path.join(ROOT, 'docs', 'phases', 'phasing-strategy.md');
+const PHASES = fs.existsSync(PHASES_PRIMARY) ? PHASES_PRIMARY : PHASES_ALT;
 const REPORTS = path.join(ROOT, 'docs', 'specs');
 
 // -- 1. Spec Registry
