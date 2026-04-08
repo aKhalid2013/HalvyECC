@@ -38,3 +38,28 @@ Update docs/specs/_INDEX.md status column.
 - PASS: all ACs pass, no critical deviations in data/API/UI
 - PARTIAL: all ACs pass but some lack tests, or minor UI deviations
 - FAIL: any AC fails, or critical data/API deviation found
+
+### Step 4: Write Feedback Log
+After writing the .report.md, also write a structured JSON summary.
+
+**File path:** `feedback-logs/verifications/SPEC-{NNN}.json`
+
+**Required fields:**
+
+```json
+{
+  "spec_id": "SPEC-NNN",
+  "date": "YYYY-MM-DD",
+  "platform": "claude_code",
+  "verdict": "PASS | FAIL | PARTIAL",
+  "criteria_total": 8,
+  "criteria_pass": 6,
+  "criteria_fail": 1,
+  "criteria_partial": 1,
+  "failure_categories": ["missing_edge_case_test", "rls_policy_mismatch"],
+  "dev_iterations_before_verify": 2,
+  "time_from_spec_approval_days": 3
+}
+```
+
+**Schema reference:** `feedback-schemas/verification-result.schema.json`

@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Session Log",
+  "description": "Structured log of an AI agent development session",
+  "type": "object",
+  "required": ["session_id", "date", "platform", "workflow_phase", "outcome"],
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "pattern": "^sess-\\d{4}-\\d{2}-\\d{2}-\\d{6}$",
+      "description": "Unique session identifier: sess-YYYY-MM-DD-HHMMSS"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "platform": {
+      "type": "string",
+      "enum": ["claude_code", "antigravity", "codex", "gemini_cli"]
+    },
+    "spec_id": {
+      "type": ["string", "null"],
+      "pattern": "^SPEC-\\d{3}$"
+    },
+    "workflow_phase": {
+      "type": "string",
+      "enum": ["brainstorm", "spec_writing", "feasibility", "plan", "tdd", "code-review", "security-scan", "verify", "other"]
+    },
+    "duration_minutes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["success", "partial", "failed", "abandoned"]
+    },
+    "iterations": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "human_interventions": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "description"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["hallucination", "loop", "wrong_pattern", "missing_context", "rule_violation", "tool_failure", "other"]
+          },
+          "description": { "type": "string" },
+          "resolution": {
+            "type": "string",
+            "enum": ["manual_correction", "agent_self_corrected", "escalated", "workaround", "unresolved"]
+          },
+          "time_lost_minutes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "rules_violated": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "agent_strengths": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": { "type": "string" }
+  }
+}

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // scripts/generate-po-context.js
 // Generates docs/PO-CONTEXT.md from three live repo sources:
-//   1. docs/specs/_INDEX.md          -> spec registry + status
-//   2. docs/specs/**/*.report.md     -> spec-verifier output
-//   3. docs/phases/README.md         -> phase completion %
+//   1. docs/specs/_INDEX.md                              -> spec registry + status
+//   2. docs/specs/**/*.report.md                         -> spec-verifier output
+//   3. docs/phases/README.md (or phasing-strategy.md)   -> phase completion %
 
 const fs   = require('fs');
 const path = require('path');
@@ -11,7 +11,9 @@ const path = require('path');
 const ROOT    = path.resolve(__dirname, '..');
 const OUTPUT  = path.join(ROOT, 'docs', 'PO-CONTEXT.md');
 const INDEX   = path.join(ROOT, 'docs', 'specs', '_INDEX.md');
-const PHASES  = path.join(ROOT, 'docs', 'phases', 'README.md');
+const PHASES_PRIMARY = path.join(ROOT, 'docs', 'phases', 'README.md');
+const PHASES_ALT     = path.join(ROOT, 'docs', 'phases', 'phasing-strategy.md');
+const PHASES = fs.existsSync(PHASES_PRIMARY) ? PHASES_PRIMARY : PHASES_ALT;
 const REPORTS = path.join(ROOT, 'docs', 'specs');
 
 // -- 1. Spec Registry
@@ -49,7 +51,7 @@ function extractVerificationSummaries() {
 
 // -- 3. Phase Completion
 function extractPhaseCompletion() {
-  if (!fs.existsSync(PHASES)) return '> docs/phases/README.md not found.\n';
+  if (!fs.existsSync(PHASES)) return '> ' + path.relative(ROOT, PHASES) + ' not found.\n';
   const text   = fs.readFileSync(PHASES, 'utf8');
   const phases = text.split(/^## Phase \d/m).slice(1);
   const phaseHeaders = [...text.matchAll(/^## (Phase \d[^\n]*)/gm)].map(m => m[1]);

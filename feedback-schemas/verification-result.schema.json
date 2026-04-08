@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Verification Result",
+  "description": "Structured result from a spec-verifier run",
+  "type": "object",
+  "required": ["spec_id", "date", "platform", "verdict", "criteria_total", "criteria_pass", "criteria_fail", "criteria_partial"],
+  "properties": {
+    "spec_id": {
+      "type": "string",
+      "pattern": "^SPEC-\\d{3}$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "platform": {
+      "type": "string",
+      "enum": ["claude_code", "antigravity", "codex", "gemini_cli"]
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "PARTIAL"]
+    },
+    "criteria_total": { "type": "integer", "minimum": 0 },
+    "criteria_pass": { "type": "integer", "minimum": 0 },
+    "criteria_fail": { "type": "integer", "minimum": 0 },
+    "criteria_partial": { "type": "integer", "minimum": 0 },
+    "failure_categories": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "dev_iterations_before_verify": { "type": "integer", "minimum": 0 },
+    "time_from_spec_approval_days": { "type": "integer", "minimum": 0 }
+  }
+}
