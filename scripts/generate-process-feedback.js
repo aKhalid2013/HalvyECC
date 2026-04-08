@@ -152,7 +152,7 @@ function observationSummary(observations) {
   return observations
     .sort((a, b) => {
       const sev = { critical: 0, high: 1, medium: 2, low: 3 };
-      const severityDiff = (sev[a.severity] || 3) - (sev[b.severity] || 3);
+      const severityDiff = (sev[a.severity] ?? 3) - (sev[b.severity] ?? 3);
       if (severityDiff !== 0) return severityDiff;
       const dateA = a.date || '';
       const dateB = b.date || '';
