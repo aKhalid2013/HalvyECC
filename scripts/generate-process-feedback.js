@@ -19,9 +19,14 @@ function readJsonDir(dir) {
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir)
     .filter(f => f.endsWith('.json'))
+    .sort()
     .map(f => {
-      try { return JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')); }
-      catch { return null; }
+      const filePath = path.join(dir, f);
+      try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); }
+      catch (err) {
+        console.warn('Warning: failed to parse JSON file ' + filePath + ': ' + err.message);
+        return null;
+      }
     })
     .filter(Boolean);
 }
@@ -58,16 +63,18 @@ function sessionStats(sessions) {
     '**By platform:**',
   ];
   Object.entries(platforms).sort((a, b) => b[1] - a[1]).forEach(([k, v]) => {
-    lines.push('- ' + k + ': ' + v + ' sessions');
+    lines.push('- ' + k + ': ' + v + (v === 1 ? ' session' : ' sessions'));
   });
   lines.push('', '**By workflow phase:**');
   Object.entries(phases).sort((a, b) => b[1] - a[1]).forEach(([k, v]) => {
-    lines.push('- ' + k + ': ' + v + ' sessions');
+    lines.push('- ' + k + ': ' + v + (v === 1 ? ' session' : ' sessions'));
   });
   lines.push('', '**By outcome:**');
-  Object.entries(outcomes).forEach(([k, v]) => {
-    lines.push('- ' + k + ': ' + v);
-  });
+  Object.entries(outcomes)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .forEach(([k, v]) => {
+      lines.push('- ' + k + ': ' + v);
+    });
 
   if (allIssues.length) {
     const issueTypes = {};
@@ -120,9 +127,12 @@ function verificationStats(verifs) {
     '- **Total verifications:** ' + total,
     '- **PASS rate:** ' + passRate + '%',
   ];
-  Object.entries(verdicts).forEach(([k, v]) => {
-    lines.push('- ' + k + ': ' + v);
-  });
+  const VERDICT_ORDER = { PASS: 0, PARTIAL: 1, FAIL: 2 };
+  Object.entries(verdicts)
+    .sort((a, b) => (VERDICT_ORDER[a[0]] ?? 3) - (VERDICT_ORDER[b[0]] ?? 3))
+    .forEach(([k, v]) => {
+      lines.push('- ' + k + ': ' + v);
+    });
 
   if (Object.keys(failCategories).length) {
     lines.push('', '**Failure categories:**', '');
@@ -142,7 +152,14 @@ function observationSummary(observations) {
   return observations
     .sort((a, b) => {
       const sev = { critical: 0, high: 1, medium: 2, low: 3 };
-      return (sev[a.severity] || 3) - (sev[b.severity] || 3);
+      const severityDiff = (sev[a.severity] || 3) - (sev[b.severity] || 3);
+      if (severityDiff !== 0) return severityDiff;
+      const dateA = a.date || '';
+      const dateB = b.date || '';
+      if (dateA !== dateB) return dateB.localeCompare(dateA);
+      const titleDiff = (a.title || '').localeCompare(b.title || '');
+      if (titleDiff !== 0) return titleDiff;
+      return (a.category || '').localeCompare(b.category || '');
     })
     .map(o => {
       const lines = ['### [' + (o.severity || 'medium').toUpperCase() + '] ' + o.title];
