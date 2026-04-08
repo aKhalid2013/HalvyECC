@@ -16,7 +16,10 @@ See @AGENTS.md for universal project rules.
 1. Use the product-owner agent to brainstorm feature X
 2. PO Agent produces spec → feasibility check → you approve
 3. /plan "Implement SPEC-NNN"
-4. /tdd → implement → /code-review → /security-scan
+   → agent writes docs/plans/SPEC-NNN-tasks.md and STOPS
+   → you review the task list and approve it
+4. /tdd TASK-1 SPEC-NNN → implement → /code-review (per task or at end)
+   → /tdd TASK-2 SPEC-NNN (new session) → repeat per task
 5. Use the spec-verifier agent on SPEC-NNN
 
 ## Agent Teams (for parallel feature work)
@@ -59,3 +62,17 @@ Configured in `~/.claude/settings.json` under `mcpServers`:
 - **supabase** — Query schema, RLS policies, run SQL directly. Replace `YOUR_SUPABASE_PROJECT_REF` with your project ref before using.
 - **memory** — Persist facts across sessions (approved specs, phase state, architectural decisions)
 - **sequential-thinking** — Chain-of-thought reasoning for complex planning tasks
+
+## Slash Command Boundaries (enforced)
+
+/plan  — Output only. Writes docs/plans/SPEC-NNN-tasks.md and STOPS.
+         No source files. No tests. No implementation.
+         Final output is always the ✅ PLAN COMPLETE stop message.
+
+/tdd   — Always called as: /tdd TASK-N SPEC-NNN
+         Reads TASK-N from docs/plans/SPEC-NNN-tasks.md.
+         Implements exactly one task. STOPS after marking it done.
+         Does NOT chain to TASK-N+1 automatically.
+
+These commands are separated by a human approval step.
+They never run back-to-back without developer action between them.
