@@ -100,7 +100,7 @@ This task appends all explicit indexes to the migration file. The partial unique
 ---
 
 ### TASK-3: Triggers (9 Domain + moddatetime)
-**Status:** pending
+**Status:** ✅ done
 **Estimated effort:** L
 **Acceptance Criteria Covered:** AC-11, AC-12, AC-13, AC-14
 
