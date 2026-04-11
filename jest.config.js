@@ -5,7 +5,7 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(' +
+    '/node_modules/(?!(' +
       'expo|' +
       '@expo|' +
       'expo-router|' +
@@ -13,13 +13,20 @@ module.exports = {
       'expo-linking|' +
       'expo-modules-core|' +
       'expo-status-bar|' +
+      'expo-secure-store|' +
+      'expo-auth-session|' +
+      'expo-web-browser|' +
+      'expo-crypto|' +
+      'expo-asset|' +
       'react-native|' +
       '@react-native|' +
       '@react-navigation|' +
       'nativewind|' +
       'react-native-reanimated|' +
       'react-native-safe-area-context|' +
-      'react-native-screens' +
+      'react-native-screens|' +
+      '@supabase|' +
+      '@tanstack' +
     ')/)',
   ],
 };
