@@ -1,0 +1,13 @@
+{
+  "spec_id": "SPEC-002",
+  "date": "2026-04-11",
+  "platform": "claude_code",
+  "verdict": "PARTIAL",
+  "criteria_total": 20,
+  "criteria_pass": 19,
+  "criteria_fail": 1,
+  "criteria_partial": 0,
+  "failure_categories": ["minor_ui_deviation", "test_failure_due_to_mismatch"],
+  "dev_iterations_before_verify": 1,
+  "time_from_spec_approval_days": 3
+}
