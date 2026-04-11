@@ -24,26 +24,26 @@ SELECT has_trigger('public', 'mentions', 'trg_mention_notification', 'trg_mentio
 
 -- Setup: Create a user and a group
 INSERT INTO users (id, email, display_name, auth_provider)
-VALUES ('00000000-0000-0000-0000-000000000001', 'test@example.com', 'Test User', 'google');
+VALUES ('06060606-0606-0606-0606-060606060606', 'test@example.com', 'Test User', 'google');
 
 INSERT INTO groups (id, name, group_type, owner_id)
-VALUES ('00000000-0000-0000-0000-000000000010', 'Test Group', 'dinner', '00000000-0000-0000-0000-000000000001');
+VALUES ('00000000-0000-0000-0000-000000000010', 'Test Group', 'dinner', '06060606-0606-0606-0606-060606060606');
 
 INSERT INTO group_members (group_id, user_id, role)
-VALUES ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'owner');
+VALUES ('00000000-0000-0000-0000-000000000010', '06060606-0606-0606-0606-060606060606', 'owner');
 
 -- 3.1. Expense Create Message
 INSERT INTO expenses (id, group_id, creator_user_id, payer_user_id, title, total_amount, currency)
-VALUES ('00000000-0000-0000-0000-000000000100', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Dinner expense', 50.00, 'USD');
+VALUES ('07070707-0707-0707-0707-070707070707', '00000000-0000-0000-0000-000000000010', '06060606-0606-0606-0606-060606060606', '06060606-0606-0606-0606-060606060606', 'Dinner expense', 50.00, 'USD');
 
 -- 3.2. Expense Edit Message
-UPDATE expenses SET title = 'Updated Dinner' WHERE id = '00000000-0000-0000-0000-000000000100';
+UPDATE expenses SET title = 'Updated Dinner' WHERE id = '07070707-0707-0707-0707-070707070707';
 
 -- 3.3. Expense Delete Message
-UPDATE expenses SET deleted_at = now() WHERE id = '00000000-0000-0000-0000-000000000100';
+UPDATE expenses SET deleted_at = now() WHERE id = '07070707-0707-0707-0707-070707070707';
 
 SELECT results_eq(
-  'SELECT body FROM messages WHERE expense_id = ''00000000-0000-0000-0000-000000000100'' ORDER BY created_at ASC',
+  'SELECT body FROM messages WHERE expense_id = ''07070707-0707-0707-0707-070707070707'' ORDER BY created_at ASC',
   ARRAY[
     'Test User added "Dinner expense"',
     'Expense "Updated Dinner" was updated',
@@ -54,10 +54,10 @@ SELECT results_eq(
 
 -- 3.4. Payment Message
 INSERT INTO payments (id, group_id, from_user_id, to_user_id, amount, currency)
-VALUES ('00000000-0000-0000-0000-000000000200', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 25.00, 'USD');
+VALUES ('08080808-0808-0808-0808-080808080808', '00000000-0000-0000-0000-000000000010', '06060606-0606-0606-0606-060606060606', '06060606-0606-0606-0606-060606060606', 25.00, 'USD');
 
 SELECT results_eq(
-  'SELECT body FROM messages WHERE payment_id = ''00000000-0000-0000-0000-000000000200''',
+  'SELECT body FROM messages WHERE payment_id = ''08080808-0808-0808-0808-080808080808''',
   ARRAY['Test User paid Test User · USD 25.00'],
   'Should create a system message when payment is recorded'
 );
@@ -69,7 +69,7 @@ VALUES ('00000000-0000-0000-0000-000000000002', 'member@example.com', 'Member Us
 INSERT INTO group_members (group_id, user_id, role, joined_at)
 VALUES ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000002', 'member', now() + interval '1 hour');
 
-UPDATE users SET deleted_at = now() WHERE id = '00000000-0000-0000-0000-000000000001';
+UPDATE users SET deleted_at = now() WHERE id = '06060606-0606-0606-0606-060606060606';
 
 SELECT results_eq(
   'SELECT owner_id FROM groups WHERE id = ''00000000-0000-0000-0000-000000000010''',

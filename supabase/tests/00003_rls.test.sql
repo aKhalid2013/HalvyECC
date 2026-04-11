@@ -4,14 +4,14 @@ SELECT plan(24);
 -- Setup initial test data
 INSERT INTO users (id, email, display_name, auth_provider)
 VALUES 
-  ('11111111-1111-1111-1111-111111111111', 'user1@example.com', 'User One', 'google'),
-  ('22222222-2222-2222-2222-222222222222', 'user2@example.com', 'User Two', 'google');
+  ('30303030-3030-3030-3030-303030303030', 'user1@example.com', 'User One', 'google'),
+  ('40404040-4040-4040-4040-404040404040', 'user2@example.com', 'User Two', 'google');
 
 INSERT INTO groups (id, name, group_type, owner_id)
-VALUES ('00000000-0000-0000-0000-000000000001', 'Group One', 'dinner', '11111111-1111-1111-1111-111111111111');
+VALUES ('03030303-0303-0303-0303-030303030303', 'Group One', 'dinner', '30303030-3030-3030-3030-303030303030');
 
 INSERT INTO group_members (group_id, user_id, role)
-VALUES ('00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'owner');
+VALUES ('03030303-0303-0303-0303-030303030303', '30303030-3030-3030-3030-303030303030', 'owner');
 
 -- 1. Test Anon Access
 SET LOCAL ROLE anon;
@@ -20,20 +20,20 @@ SELECT is_empty('SELECT * FROM groups', 'Anon should see nothing in groups');
 
 -- 2. Test User Isolation
 SET LOCAL ROLE authenticated;
-SELECT set_config('request.jwt.claims', '{"sub": "11111111-1111-1111-1111-111111111111"}', true);
+SELECT set_config('request.jwt.claims', '{"sub": "30303030-3030-3030-3030-303030303030"}', true);
 
 SELECT results_eq(
     'SELECT id FROM users',
-    ARRAY['11111111-1111-1111-1111-111111111111'::uuid],
+    ARRAY['30303030-3030-3030-3030-303030303030'::uuid],
     'User One should only see their own user record'
 );
 
 -- 3. Test Group Isolation
 -- User Two is NOT in Group One
-SELECT set_config('request.jwt.claims', '{"sub": "22222222-2222-2222-2222-222222222222"}', true);
+SELECT set_config('request.jwt.claims', '{"sub": "40404040-4040-4040-4040-404040404040"}', true);
 
 SELECT is_empty(
-    'SELECT id FROM groups WHERE id = ''00000000-0000-0000-0000-000000000001''',
+    'SELECT id FROM groups WHERE id = ''03030303-0303-0303-0303-030303030303''',
     'User Two should not see Group One'
 );
 
@@ -41,36 +41,36 @@ SELECT is_empty(
 SELECT is_empty('SELECT * FROM rate_limits', 'Auth user should not see rate_limits');
 
 -- 5. Test Group Admin Update
-SELECT set_config('request.jwt.claims', '{"sub": "11111111-1111-1111-1111-111111111111"}', true);
+SELECT set_config('request.jwt.claims', '{"sub": "30303030-3030-3030-3030-303030303030"}', true);
 SELECT lives_ok(
-    'UPDATE groups SET name = ''New Name'' WHERE id = ''00000000-0000-0000-0000-000000000001''',
+    'UPDATE groups SET name = ''New Name'' WHERE id = ''03030303-0303-0303-0303-030303030303''',
     'Owner can update group name'
 );
 
 -- Reset role to insert more test data
 RESET ROLE;
 INSERT INTO users (id, email, display_name, auth_provider)
-VALUES ('33333333-3333-3333-3333-333333333333', 'user3@example.com', 'User Three', 'google');
+VALUES ('50505050-5050-5050-5050-505050505050', 'user3@example.com', 'User Three', 'google');
 INSERT INTO group_members (group_id, user_id, role)
-VALUES ('00000000-0000-0000-0000-000000000001', '33333333-3333-3333-3333-333333333333', 'member');
+VALUES ('03030303-0303-0303-0303-030303030303', '50505050-5050-5050-5050-505050505050', 'member');
 
 INSERT INTO expenses (id, group_id, creator_user_id, payer_user_id, title, total_amount, currency)
-VALUES ('00000000-0000-0000-0000-000000000100', '00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'Dinner', 10.00, 'USD');
+VALUES ('04040404-0404-0404-0404-040404040404', '03030303-0303-0303-0303-030303030303', '30303030-3030-3030-3030-303030303030', '30303030-3030-3030-3030-303030303030', 'Dinner', 10.00, 'USD');
 
 SET LOCAL ROLE authenticated;
-SELECT set_config('request.jwt.claims', '{"sub": "33333333-3333-3333-3333-333333333333"}', true);
+SELECT set_config('request.jwt.claims', '{"sub": "50505050-5050-5050-5050-505050505050"}', true);
 -- This should fail to update any rows
 SELECT results_eq(
-    'UPDATE groups SET name = ''Hacker Name'' WHERE id = ''00000000-0000-0000-0000-000000000001'' RETURNING id',
+    'UPDATE groups SET name = ''Hacker Name'' WHERE id = ''03030303-0303-0303-0303-030303030303'' RETURNING id',
     '{}'::uuid[],
     'Regular member cannot update group name'
 );
 
 -- 6. Test Expense Deletion
-SELECT set_config('request.jwt.claims', '{"sub": "33333333-3333-3333-3333-333333333333"}', true);
+SELECT set_config('request.jwt.claims', '{"sub": "50505050-5050-5050-5050-505050505050"}', true);
 -- User Three (regular member) tries to delete User One's expense
 SELECT results_eq(
-    'DELETE FROM expenses WHERE id = ''00000000-0000-0000-0000-000000000100'' RETURNING id',
+    'DELETE FROM expenses WHERE id = ''04040404-0404-0404-0404-040404040404'' RETURNING id',
     '{}'::uuid[],
     'Regular member cannot delete someone else''s expense'
 );
