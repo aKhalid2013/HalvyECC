@@ -68,7 +68,7 @@ The migration file will be built incrementally across TASK-1 through TASK-4. TAS
 ---
 
 ### TASK-2: Indexes + Partial Unique Index
-**Status:** pending
+**Status:** ✅ done
 **Estimated effort:** S
 **Acceptance Criteria Covered:** AC-4, AC-6
 

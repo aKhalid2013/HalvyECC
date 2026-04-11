@@ -373,3 +373,40 @@ CREATE TABLE ai_budget (
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (month_key)
 );
+
+
+-- ============ INDEXES ============
+
+CREATE INDEX idx_group_members_group_id ON group_members(group_id);
+CREATE INDEX idx_group_members_user_id  ON group_members(user_id);
+
+CREATE INDEX idx_expenses_group_id   ON expenses(group_id);
+CREATE INDEX idx_expenses_deleted_at ON expenses(deleted_at) WHERE deleted_at IS NULL;
+
+CREATE INDEX idx_line_item_splits_expense_id   ON line_item_splits(expense_id);
+CREATE INDEX idx_line_item_splits_line_item_id ON line_item_splits(line_item_id);
+CREATE INDEX idx_line_item_splits_user_id      ON line_item_splits(user_id);
+
+CREATE INDEX idx_payments_group_id   ON payments(group_id);
+CREATE INDEX idx_payments_from_user  ON payments(from_user_id);
+CREATE INDEX idx_payments_to_user    ON payments(to_user_id);
+CREATE INDEX idx_payments_deleted_at ON payments(deleted_at) WHERE deleted_at IS NULL;
+
+CREATE INDEX idx_messages_group_id_created ON messages(group_id, created_at DESC);
+CREATE INDEX idx_messages_deleted_at       ON messages(deleted_at) WHERE deleted_at IS NULL;
+
+CREATE INDEX idx_mentions_mentioned_user ON mentions(mentioned_user_id);
+CREATE INDEX idx_mentions_message_id     ON mentions(message_id);
+
+-- Placeholder claiming lookup
+CREATE INDEX idx_placeholders_email ON placeholders(email) WHERE email IS NOT NULL AND claimed_at IS NULL;
+CREATE INDEX idx_placeholders_phone ON placeholders(phone) WHERE phone IS NOT NULL AND claimed_at IS NULL;
+
+-- Standing orders due for execution (active only)
+CREATE INDEX idx_standing_orders_next_run ON standing_orders(next_run_at) WHERE is_active = true;
+
+CREATE INDEX idx_notifications_user_id ON notifications(user_id, created_at DESC);
+
+-- Partial unique index for group ownership (one owner per group)
+CREATE UNIQUE INDEX one_owner_per_group ON group_members(group_id) WHERE role = 'owner';
+
