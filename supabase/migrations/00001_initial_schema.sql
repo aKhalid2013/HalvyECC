@@ -63,6 +63,7 @@ CREATE TYPE standing_order_split_mode AS ENUM ('fixed', 'collaborative');
 CREATE TABLE users (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email         TEXT UNIQUE NOT NULL,
+  phone         TEXT UNIQUE,
   display_name  TEXT NOT NULL,
   avatar_url    TEXT,
   auth_provider TEXT NOT NULL, -- 'google' | 'apple' | 'magic_link'
@@ -409,4 +410,315 @@ CREATE INDEX idx_notifications_user_id ON notifications(user_id, created_at DESC
 
 -- Partial unique index for group ownership (one owner per group)
 CREATE UNIQUE INDEX one_owner_per_group ON group_members(group_id) WHERE role = 'owner';
+
+
+-- ============ TRIGGER FUNCTIONS ============
+
+-- 1. fn_balance_broadcast
+-- Broadcasts a notification to the Realtime channel 'balances:{group_id}'
+CREATE OR REPLACE FUNCTION fn_balance_broadcast()
+RETURNS TRIGGER AS $$
+DECLARE
+  target_group_id UUID;
+BEGIN
+  IF (TG_OP = 'DELETE') THEN
+    target_group_id := OLD.group_id;
+  ELSE
+    target_group_id := NEW.group_id;
+  END IF;
+
+  PERFORM pg_notify(
+    'pgrst',
+    json_build_object(
+      'channel', 'balances:' || target_group_id::text,
+      'message', 'recalculate'
+    )::text
+  );
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. fn_expense_create_msg
+-- Inserts system message: "[creator] added [title]"
+CREATE OR REPLACE FUNCTION fn_expense_create_msg()
+RETURNS TRIGGER AS $$
+DECLARE
+  creator_name TEXT;
+BEGIN
+  SELECT display_name INTO creator_name FROM users WHERE id = NEW.creator_user_id;
+
+  INSERT INTO messages (group_id, message_type, body, expense_id, created_at)
+  VALUES (
+    NEW.group_id,
+    'system_event',
+    COALESCE(creator_name, 'Someone') || ' added "' || NEW.title || '"',
+    NEW.id,
+    NEW.created_at
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 3. fn_expense_edit_msg
+-- Inserts system message on substantive edits
+CREATE OR REPLACE FUNCTION fn_expense_edit_msg()
+RETURNS TRIGGER AS $$
+DECLARE
+  editor_name TEXT;
+BEGIN
+  -- Only fire if title or total_amount changed and it's not a soft-delete (handled by delete_msg)
+  IF (NEW.deleted_at IS NULL AND (OLD.title <> NEW.title OR OLD.total_amount <> NEW.total_amount)) THEN
+    INSERT INTO messages (group_id, message_type, body, expense_id, created_at)
+    VALUES (
+      NEW.group_id,
+      'system_event',
+      'Expense "' || NEW.title || '" was updated',
+      NEW.id,
+      now()
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 4. fn_expense_delete_msg
+-- Inserts system message on soft-delete
+CREATE OR REPLACE FUNCTION fn_expense_delete_msg()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF (OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL) THEN
+    INSERT INTO messages (group_id, message_type, body, expense_id, created_at)
+    VALUES (
+      NEW.group_id,
+      'system_event',
+      'Expense "' || NEW.title || '" was deleted',
+      NEW.id,
+      NEW.deleted_at
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 5. fn_payment_msg
+-- Inserts system message: "[from] paid [to] · $[amount]"
+CREATE OR REPLACE FUNCTION fn_payment_msg()
+RETURNS TRIGGER AS $$
+DECLARE
+  from_name TEXT;
+  to_name TEXT;
+BEGIN
+  -- Resolve from_name
+  IF NEW.from_user_id IS NOT NULL THEN
+    SELECT display_name INTO from_name FROM users WHERE id = NEW.from_user_id;
+  ELSE
+    SELECT display_name INTO from_name FROM placeholders WHERE id = NEW.from_placeholder_id;
+  END IF;
+
+  -- Resolve to_name
+  IF NEW.to_user_id IS NOT NULL THEN
+    SELECT display_name INTO to_name FROM users WHERE id = NEW.to_user_id;
+  ELSE
+    SELECT display_name INTO to_name FROM placeholders WHERE id = NEW.to_placeholder_id;
+  END IF;
+
+  INSERT INTO messages (group_id, message_type, body, payment_id, created_at)
+  VALUES (
+    NEW.group_id,
+    'system_event',
+    COALESCE(from_name, 'Someone') || ' paid ' || COALESCE(to_name, 'Someone') || ' · ' || NEW.currency || ' ' || NEW.amount::text,
+    NEW.id,
+    NEW.created_at
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 6. fn_owner_transfer
+-- Soft-delete of user: reassign groups.owner_id to earliest joined member
+CREATE OR REPLACE FUNCTION fn_owner_transfer()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF (OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL) THEN
+    -- For every group this user owns
+    UPDATE groups
+    SET owner_id = (
+      SELECT user_id
+      FROM group_members
+      WHERE group_id = groups.id
+        AND user_id <> OLD.id
+        AND user_id IS NOT NULL
+      ORDER BY joined_at ASC
+      LIMIT 1
+    )
+    WHERE owner_id = OLD.id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 7. fn_placeholder_claim_check
+-- Matches new user email/phone against unclaimed placeholders
+CREATE OR REPLACE FUNCTION fn_placeholder_claim_check()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Insert notifications for any groups where this user matches an unclaimed placeholder
+  INSERT INTO notifications (user_id, group_id, notification_type, body)
+  SELECT
+    NEW.id,
+    p.group_id,
+    'placeholder_claim_available',
+    'You have unclaimed expenses in "' || g.name || '". Tap to claim your history.'
+  FROM placeholders p
+  JOIN groups g ON g.id = p.group_id
+  WHERE (p.email = NEW.email OR (NEW.phone IS NOT NULL AND p.phone = NEW.phone))
+    AND p.claimed_at IS NULL;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 8. fn_mention_notification
+-- Inserts notification on mention
+CREATE OR REPLACE FUNCTION fn_mention_notification()
+RETURNS TRIGGER AS $$
+DECLARE
+  mentioner_name TEXT;
+  group_name TEXT;
+BEGIN
+  SELECT display_name INTO mentioner_name FROM users WHERE id = NEW.mentioner_user_id;
+  SELECT name INTO group_name FROM groups WHERE id = NEW.group_id;
+
+  INSERT INTO notifications (user_id, group_id, message_id, notification_type, body)
+  VALUES (
+    NEW.mentioned_user_id,
+    NEW.group_id,
+    NEW.message_id,
+    'mention',
+    COALESCE(mentioner_name, 'Someone') || ' mentioned you in "' || COALESCE(group_name, 'the group') || '"'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 9. fn_item_reassign_notification
+-- Notification when line_item_splits.user_id changes
+CREATE OR REPLACE FUNCTION fn_item_reassign_notification()
+RETURNS TRIGGER AS $$
+DECLARE
+  item_desc TEXT;
+BEGIN
+  IF (OLD.user_id IS NOT NULL AND NEW.user_id IS NOT NULL AND OLD.user_id <> NEW.user_id) THEN
+    SELECT description INTO item_desc FROM line_items WHERE id = NEW.line_item_id;
+
+    INSERT INTO notifications (user_id, group_id, expense_id, notification_type, body)
+    VALUES (
+      NEW.user_id,
+      (SELECT group_id FROM expenses WHERE id = NEW.expense_id),
+      NEW.expense_id,
+      'item_reassigned',
+      'A line item ("' || COALESCE(item_desc, 'Unnamed item') || '") was reassigned to you.'
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 10. fn_standing_order_execute (Stub for Phase 5)
+CREATE OR REPLACE FUNCTION fn_standing_order_execute()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Logic deferred to Phase 5.
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- ============ TRIGGERS ============
+
+-- 1. Balance Recalculation Broadcast
+CREATE TRIGGER trg_balance_broadcast_expenses
+AFTER INSERT OR UPDATE OR DELETE ON expenses
+FOR EACH ROW EXECUTE FUNCTION fn_balance_broadcast();
+
+CREATE TRIGGER trg_balance_broadcast_payments
+AFTER INSERT OR UPDATE OR DELETE ON payments
+FOR EACH ROW EXECUTE FUNCTION fn_balance_broadcast();
+
+-- 2. Expense Lifecycle Messages
+CREATE TRIGGER trg_expense_create_msg
+AFTER INSERT ON expenses
+FOR EACH ROW EXECUTE FUNCTION fn_expense_create_msg();
+
+CREATE TRIGGER trg_expense_edit_msg
+AFTER UPDATE ON expenses
+FOR EACH ROW EXECUTE FUNCTION fn_expense_edit_msg();
+
+CREATE TRIGGER trg_expense_delete_msg
+AFTER UPDATE ON expenses
+FOR EACH ROW EXECUTE FUNCTION fn_expense_delete_msg();
+
+-- 3. Payment Message
+CREATE TRIGGER trg_payment_msg
+AFTER INSERT ON payments
+FOR EACH ROW EXECUTE FUNCTION fn_payment_msg();
+
+-- 4. Owner Transfer
+CREATE TRIGGER trg_owner_transfer
+AFTER UPDATE ON users
+FOR EACH ROW EXECUTE FUNCTION fn_owner_transfer();
+
+-- 5. Placeholder Claim Check
+CREATE TRIGGER trg_placeholder_claim_check
+AFTER INSERT ON users
+FOR EACH ROW EXECUTE FUNCTION fn_placeholder_claim_check();
+
+-- 6. Mention Notification
+CREATE TRIGGER trg_mention_notification
+AFTER INSERT ON mentions
+FOR EACH ROW EXECUTE FUNCTION fn_mention_notification();
+
+-- 7. Item Reassignment Notification
+CREATE TRIGGER trg_item_reassign_notification
+AFTER UPDATE ON line_item_splits
+FOR EACH ROW EXECUTE FUNCTION fn_item_reassign_notification();
+
+
+-- ============ MODDATETIME TRIGGERS ============
+
+-- moddatetime triggers for 11 tables with updated_at column
+
+CREATE TRIGGER handle_updated_at_users BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER handle_updated_at_groups BEFORE UPDATE ON groups
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER handle_updated_at_group_members BEFORE UPDATE ON group_members
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER handle_updated_at_placeholders BEFORE UPDATE ON placeholders
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER handle_updated_at_expenses BEFORE UPDATE ON expenses
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER handle_updated_at_line_items BEFORE UPDATE ON line_items
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER handle_updated_at_line_item_splits BEFORE UPDATE ON line_item_splits
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER handle_updated_at_payments BEFORE UPDATE ON payments
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER handle_updated_at_standing_orders BEFORE UPDATE ON standing_orders
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER handle_updated_at_rate_limits BEFORE UPDATE ON rate_limits
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER handle_updated_at_ai_budget BEFORE UPDATE ON ai_budget
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
 
