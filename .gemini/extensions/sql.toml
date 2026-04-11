@@ -1,0 +1,3 @@
+name = "sql"
+description = "PostgreSQL database patterns for query optimization, schema design, indexing, and security. Based on Supabase best practices."
+file = ".agent-skills/postgres-patterns/SKILL.md"

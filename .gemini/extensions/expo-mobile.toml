@@ -1,0 +1,3 @@
+name = "expo-mobile"
+description = "Expo and React Native patterns for Halvy. Triggers: \"component\", \"screen\", \"navigation\", \"expo\", \"NativeWind\", \"mobile\", \"React Native\"."
+file = ".agent-skills/expo-mobile/SKILL.md"

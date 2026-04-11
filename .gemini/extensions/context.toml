@@ -1,0 +1,3 @@
+name = "context"
+description = "Loads Halvy project context from docs/. Use before significant dev tasks. Triggers: \"load context\", \"project context\", any reference to specs, schema, or architecture."
+file = ".agent-skills/halvy-context/SKILL.md"
