@@ -722,3 +722,151 @@ CREATE TRIGGER handle_updated_at_ai_budget BEFORE UPDATE ON ai_budget
   FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
 
 
+-- ============ SECURITY HELPERS ============
+
+-- Function to check if a user is a member of a group (SECURITY DEFINER to break RLS recursion)
+CREATE OR REPLACE FUNCTION is_member(target_group_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM group_members
+    WHERE group_members.group_id = target_group_id
+      AND group_members.user_id = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- Function to check if a user is an owner or admin of a group
+CREATE OR REPLACE FUNCTION is_admin_or_owner(target_group_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM group_members
+    WHERE group_members.group_id = target_group_id
+      AND group_members.user_id = auth.uid()
+      AND group_members.role IN ('owner', 'admin')
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+
+-- ============ ROW LEVEL SECURITY ============
+
+-- Enable RLS on all 16 tables
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE group_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE placeholders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE line_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE line_item_splits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mentions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE message_reactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE standing_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE group_invites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_budget ENABLE ROW LEVEL SECURITY;
+
+-- 1. users
+CREATE POLICY "users_select_own" ON users FOR SELECT USING (id = auth.uid());
+CREATE POLICY "users_update_own" ON users FOR UPDATE USING (id = auth.uid());
+
+-- 2. groups
+CREATE POLICY "groups_select_members" ON groups FOR SELECT USING (is_member(id));
+CREATE POLICY "groups_write_owner_admin" ON groups FOR ALL USING (is_admin_or_owner(id));
+
+-- 3. group_members
+CREATE POLICY "group_members_select_visible" ON group_members FOR SELECT USING (is_member(group_id));
+CREATE POLICY "group_members_write_owner_admin" ON group_members FOR ALL USING (is_admin_or_owner(group_id));
+
+-- 4. placeholders
+CREATE POLICY "placeholders_select_members" ON placeholders FOR SELECT USING (is_member(group_id));
+CREATE POLICY "placeholders_insert_members" ON placeholders FOR INSERT WITH CHECK (is_member(group_id));
+CREATE POLICY "placeholders_update_owner_admin" ON placeholders FOR UPDATE USING (is_admin_or_owner(group_id));
+
+-- 5. expenses
+CREATE POLICY "expenses_select_members" ON expenses FOR SELECT USING (is_member(group_id));
+CREATE POLICY "expenses_insert_members" ON expenses FOR INSERT WITH CHECK (is_member(group_id));
+CREATE POLICY "expenses_update_members" ON expenses FOR UPDATE USING (is_member(group_id));
+CREATE POLICY "expenses_delete_creator_owner_admin" ON expenses FOR DELETE USING (
+  creator_user_id = auth.uid() OR is_admin_or_owner(group_id)
+);
+
+-- 6. line_items
+CREATE POLICY "line_items_select_members" ON line_items FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM expenses e WHERE e.id = line_items.expense_id AND is_member(e.group_id)
+  )
+);
+CREATE POLICY "line_items_all_members" ON line_items FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM expenses e WHERE e.id = line_items.expense_id AND is_member(e.group_id)
+  )
+);
+
+-- 7. line_item_splits
+CREATE POLICY "line_item_splits_select_members" ON line_item_splits FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM expenses e WHERE e.id = line_item_splits.expense_id AND is_member(e.group_id)
+  )
+);
+CREATE POLICY "line_item_splits_all_members" ON line_item_splits FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM expenses e WHERE e.id = line_item_splits.expense_id AND is_member(e.group_id)
+  )
+);
+
+-- 8. payments
+CREATE POLICY "payments_select_members" ON payments FOR SELECT USING (is_member(group_id));
+CREATE POLICY "payments_insert_members" ON payments FOR INSERT WITH CHECK (is_member(group_id));
+CREATE POLICY "payments_delete_creator_owner_admin" ON payments FOR DELETE USING (
+  from_user_id = auth.uid() OR is_admin_or_owner(group_id)
+);
+
+-- 9. messages
+CREATE POLICY "messages_select_members" ON messages FOR SELECT USING (is_member(group_id));
+CREATE POLICY "messages_insert_members" ON messages FOR INSERT WITH CHECK (is_member(group_id));
+CREATE POLICY "messages_delete_own" ON messages FOR DELETE USING (sender_user_id = auth.uid());
+
+-- 10. mentions
+CREATE POLICY "mentions_select_members" ON mentions FOR SELECT USING (is_member(group_id));
+
+-- 11. message_reactions
+CREATE POLICY "message_reactions_select_members" ON message_reactions FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM messages m WHERE m.id = message_reactions.message_id AND is_member(m.group_id)
+  )
+);
+CREATE POLICY "message_reactions_all_members" ON message_reactions FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM messages m WHERE m.id = message_reactions.message_id AND is_member(m.group_id)
+  )
+);
+
+-- 12. standing_orders
+CREATE POLICY "standing_orders_select_members" ON standing_orders FOR SELECT USING (is_member(group_id));
+CREATE POLICY "standing_orders_write_members" ON standing_orders FOR INSERT WITH CHECK (is_member(group_id));
+CREATE POLICY "standing_orders_update_members" ON standing_orders FOR UPDATE USING (is_member(group_id));
+CREATE POLICY "standing_orders_delete_owner_admin" ON standing_orders FOR DELETE USING (is_admin_or_owner(group_id));
+
+-- 13. notifications
+CREATE POLICY "notifications_select_own" ON notifications FOR SELECT USING (user_id = auth.uid());
+
+-- 14. group_invites
+CREATE POLICY "group_invites_select_members" ON group_invites FOR SELECT USING (is_member(group_id));
+CREATE POLICY "group_invites_select_by_token" ON group_invites FOR SELECT USING (
+  auth.uid() IS NOT NULL
+  AND token = current_setting('request.token', true)
+);
+CREATE POLICY "group_invites_owner_admin" ON group_invites FOR ALL USING (is_admin_or_owner(group_id));
+
+-- 15. rate_limits
+CREATE POLICY "rate_limits_deny_all" ON rate_limits FOR ALL USING (false);
+
+-- 16. ai_budget
+CREATE POLICY "ai_budget_deny_all" ON ai_budget FOR ALL USING (false);
+
+
