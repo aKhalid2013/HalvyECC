@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(24);
+SELECT plan(27);
 
 -- Setup initial test data
 INSERT INTO users (id, email, display_name, auth_provider)
@@ -39,6 +39,17 @@ SELECT is_empty(
 
 -- 4. Test Deny-All
 SELECT is_empty('SELECT * FROM rate_limits', 'Auth user should not see rate_limits');
+SELECT is_empty('SELECT * FROM ai_budget', 'Auth user should not see ai_budget');
+SELECT throws_ok(
+    'INSERT INTO rate_limits (user_id, action, window_start) VALUES (''30303030-3030-3030-3030-303030303030'', ''test'', now())',
+    'new row violates row-level security policy for table "rate_limits"',
+    'Auth user cannot insert into rate_limits'
+);
+SELECT throws_ok(
+    'INSERT INTO ai_budget (month_key, budget_limit) VALUES (''2099-01'', 100)',
+    'new row violates row-level security policy for table "ai_budget"',
+    'Auth user cannot insert into ai_budget'
+);
 
 -- 5. Test Group Admin Update
 SELECT set_config('request.jwt.claims', '{"sub": "30303030-3030-3030-3030-303030303030"}', true);

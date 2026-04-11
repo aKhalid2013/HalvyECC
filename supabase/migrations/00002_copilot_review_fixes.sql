@@ -12,6 +12,10 @@
 -- ----------------------------------------------------------------------------
 DROP POLICY IF EXISTS "groups_write_owner_admin" ON groups;
 
+DROP POLICY IF EXISTS "groups_insert_owner"       ON groups;
+DROP POLICY IF EXISTS "groups_update_owner_admin" ON groups;
+DROP POLICY IF EXISTS "groups_delete_owner_admin" ON groups;
+
 CREATE POLICY "groups_insert_owner"       ON groups FOR INSERT WITH CHECK (owner_id = auth.uid());
 CREATE POLICY "groups_update_owner_admin" ON groups FOR UPDATE USING (is_admin_or_owner(id));
 CREATE POLICY "groups_delete_owner_admin" ON groups FOR DELETE USING (is_admin_or_owner(id));
@@ -21,6 +25,7 @@ CREATE POLICY "groups_delete_owner_admin" ON groups FOR DELETE USING (is_admin_o
 --    Allows inserting the initial owner membership row when is_admin_or_owner()
 --    would fail (no group_members rows exist yet at creation time).
 -- ----------------------------------------------------------------------------
+DROP POLICY IF EXISTS "group_members_insert_initial_owner" ON group_members;
 CREATE POLICY "group_members_insert_initial_owner" ON group_members FOR INSERT WITH CHECK (
   role = 'owner' AND EXISTS (
     SELECT 1 FROM groups WHERE groups.id = group_members.group_id AND groups.owner_id = auth.uid()
@@ -34,17 +39,17 @@ CREATE POLICY "group_members_insert_initial_owner" ON group_members FOR INSERT W
 --    that actually support active-row fetches by group.
 -- ----------------------------------------------------------------------------
 DROP INDEX IF EXISTS idx_expenses_deleted_at;
-CREATE INDEX idx_expenses_active_group_created
+CREATE INDEX IF NOT EXISTS idx_expenses_active_group_created
     ON expenses(group_id, created_at DESC)
     WHERE deleted_at IS NULL;
 
 DROP INDEX IF EXISTS idx_payments_deleted_at;
-CREATE INDEX idx_payments_active_group_created
+CREATE INDEX IF NOT EXISTS idx_payments_active_group_created
     ON payments(group_id, created_at DESC)
     WHERE deleted_at IS NULL;
 
 DROP INDEX IF EXISTS idx_messages_deleted_at;
-CREATE INDEX idx_messages_active_group_created
+CREATE INDEX IF NOT EXISTS idx_messages_active_group_created
     ON messages(group_id, created_at DESC)
     WHERE deleted_at IS NULL;
 

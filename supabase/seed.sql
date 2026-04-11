@@ -10,7 +10,7 @@ VALUES
 
 -- 2. Create Group
 INSERT INTO public.groups (id, name, group_type, currency, owner_id)
-VALUES ('00000000-0000-0000-0000-000000000001', 'Dubai Trip', 'trip', 'USD', '11111111-1111-1111-1111-111111111111');
+VALUES ('00000000-0000-0000-0000-000000000001', 'Dubai Trip', 'dinner', 'USD', '11111111-1111-1111-1111-111111111111');
 
 -- 3. Add Members
 INSERT INTO public.group_members (group_id, user_id, role)

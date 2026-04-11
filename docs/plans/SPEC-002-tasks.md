@@ -412,6 +412,36 @@ Note: pgTAP may need to be enabled in `supabase/config.toml` if not already defa
 
 ---
 
+### TASK-10: Copilot Review Fixes
+**Status:** ✅ done
+**Estimated effort:** S
+**Acceptance Criteria Covered:** Various (Bug fixes)
+
+#### Context
+Address remaining issues from Copilot PR review on the database schemas:
+1. `fn_owner_transfer` doesn't update `group_members.role`.
+2. Missing `WITH CHECK` on `group_members_write_owner_admin`.
+3. Missing `WITH CHECK` on `expenses_update_members`.
+4. Missing `WITH CHECK` on `line_items_all_members` and `line_item_splits_all_members`.
+5. Missing `WITH CHECK (false)` on deny-all policies for `rate_limits` and `ai_budget`.
+6. Incorrect index names in tests (`00002_indexes.test.sql`).
+7. Wrong `group_type` in seed data (`trip` instead of `dinner`).
+8. Missing negative INSERT tests for `rate_limits` and `ai_budget` in RLS tests.
+
+#### Files
+- Create: `supabase/migrations/00003_copilot_review_fixes_2.sql`
+- Modify: `supabase/seed.sql`
+- Modify: `supabase/tests/00002_indexes.test.sql`
+- Modify: `supabase/tests/00003_rls.test.sql`
+
+#### Done When
+- [ ] `00003_copilot_review_fixes_2.sql` correctly implements trigger and policy changes.
+- [ ] `seed.sql` uses `dinner` group type.
+- [ ] Index tests use `idx_*_active_group_created` names.
+- [ ] RLS negative tests for inserts are added to `00003_rls.test.sql`.
+
+---
+
 ## Task Dependency Map
 
 ```
