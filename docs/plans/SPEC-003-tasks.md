@@ -621,7 +621,7 @@ Check whether `app/(auth)/` directory exists already; if not, create it. `app/(a
 
 ## TASK-11: Sign-In Screen
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-17, AC-18
 **Estimated size:** M
 
@@ -694,7 +694,7 @@ export default function SignInScreen() {
 
 ## TASK-12: Magic Link Screen
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-19, AC-20
 **Estimated size:** M
 
@@ -812,7 +812,7 @@ export default function MagicLinkScreen() {
 
 ## TASK-13: Authenticated Home Screen
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-21
 **Estimated size:** S
 
@@ -866,7 +866,7 @@ export default function HomeScreen() {
 
 ## TASK-14: Supabase Auth Config + Integration Verification
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-22, AC-23, AC-24, AC-25, AC-26, AC-27
 **Estimated size:** S
 
