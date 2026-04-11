@@ -149,7 +149,7 @@ This task appends all trigger functions and trigger definitions. There are 9 dom
 ---
 
 ### TASK-4: RLS Policies (all 16 tables)
-**Status:** pending
+**Status:** ✅ done
 **Estimated effort:** L
 **Acceptance Criteria Covered:** AC-7, AC-8, AC-9, AC-10
 
@@ -205,7 +205,7 @@ Key patterns:
 ---
 
 ### TASK-5: Seed Data
-**Status:** pending
+**Status:** ✅ done
 **Estimated effort:** M
 **Acceptance Criteria Covered:** AC-17, AC-18
 
@@ -243,7 +243,7 @@ Seed inserts directly into `public.users` (bypassing `auth.users` — no Auth ye
 ---
 
 ### TASK-6: TypeScript Type Generation (`database.ts`)
-**Status:** pending
+**Status:** ✅ done
 **Estimated effort:** S
 **Acceptance Criteria Covered:** AC-15
 
