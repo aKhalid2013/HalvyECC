@@ -272,7 +272,7 @@ The canonical file path is `src/types/database.ts` (per schema.md and SPEC-002).
 ---
 
 ### TASK-7: App-Level Models (`models.ts`)
-**Status:** pending
+**Status:** ✅ done
 **Estimated effort:** M
 **Acceptance Criteria Covered:** AC-16
 
