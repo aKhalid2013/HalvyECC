@@ -196,28 +196,31 @@ export interface Notification {
 export interface GroupInvite {
   id: string;
   groupId: string;
-  inviterUserId: string;
+  createdByUserId: string | null;
   token: string;
   expiresAt: string;
+  usedAt: string | null;
+  usedByUserId: string | null;
   createdAt: string;
 }
 
 export interface RateLimit {
   id: string;
-  userId: string;
-  endpoint: string;
-  requestsCount: number;
+  userId: string | null;
+  groupId: string | null;
+  action: string;
   windowStart: string;
+  callCount: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface AiBudget {
   id: string;
-  groupId: string;
-  tokensUsedTotal: number;
-  tokensUsedThisMonth: number;
-  billingResetAt: string;
+  monthKey: string;
+  totalCalls: number;
+  estimatedCost: number;
+  budgetLimit: number;
   createdAt: string;
   updatedAt: string;
 }

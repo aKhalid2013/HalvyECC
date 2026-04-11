@@ -441,20 +441,20 @@ CREATE TABLE notifications (
 CREATE INDEX idx_group_members_group_id ON group_members(group_id);
 CREATE INDEX idx_group_members_user_id  ON group_members(user_id);
 
-CREATE INDEX idx_expenses_group_id   ON expenses(group_id);
-CREATE INDEX idx_expenses_deleted_at ON expenses(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX idx_expenses_group_id             ON expenses(group_id);
+CREATE INDEX idx_expenses_active_group_created ON expenses(group_id, created_at DESC) WHERE deleted_at IS NULL;
 
 CREATE INDEX idx_line_item_splits_expense_id   ON line_item_splits(expense_id);
 CREATE INDEX idx_line_item_splits_line_item_id ON line_item_splits(line_item_id);
 CREATE INDEX idx_line_item_splits_user_id      ON line_item_splits(user_id);
 
-CREATE INDEX idx_payments_group_id   ON payments(group_id);
-CREATE INDEX idx_payments_from_user  ON payments(from_user_id);
-CREATE INDEX idx_payments_to_user    ON payments(to_user_id);
-CREATE INDEX idx_payments_deleted_at ON payments(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX idx_payments_group_id             ON payments(group_id);
+CREATE INDEX idx_payments_from_user            ON payments(from_user_id);
+CREATE INDEX idx_payments_to_user              ON payments(to_user_id);
+CREATE INDEX idx_payments_active_group_created ON payments(group_id, created_at DESC) WHERE deleted_at IS NULL;
 
-CREATE INDEX idx_messages_group_id_created ON messages(group_id, created_at DESC);
-CREATE INDEX idx_messages_deleted_at       ON messages(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX idx_messages_group_id_created     ON messages(group_id, created_at DESC);
+CREATE INDEX idx_messages_active_group_created ON messages(group_id, created_at DESC) WHERE deleted_at IS NULL;
 
 CREATE INDEX idx_mentions_mentioned_user ON mentions(mentioned_user_id);
 CREATE INDEX idx_mentions_message_id     ON mentions(message_id);

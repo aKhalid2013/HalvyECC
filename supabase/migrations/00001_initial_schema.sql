@@ -382,8 +382,8 @@ CREATE TABLE ai_budget (
 CREATE INDEX idx_group_members_group_id ON group_members(group_id);
 CREATE INDEX idx_group_members_user_id  ON group_members(user_id);
 
-CREATE INDEX idx_expenses_group_id   ON expenses(group_id);
-CREATE INDEX idx_expenses_deleted_at ON expenses(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX idx_expenses_group_id             ON expenses(group_id);
+CREATE INDEX idx_expenses_active_group_created ON expenses(group_id, created_at DESC) WHERE deleted_at IS NULL;
 
 CREATE INDEX idx_line_item_splits_expense_id   ON line_item_splits(expense_id);
 CREATE INDEX idx_line_item_splits_line_item_id ON line_item_splits(line_item_id);
@@ -392,10 +392,10 @@ CREATE INDEX idx_line_item_splits_user_id      ON line_item_splits(user_id);
 CREATE INDEX idx_payments_group_id   ON payments(group_id);
 CREATE INDEX idx_payments_from_user  ON payments(from_user_id);
 CREATE INDEX idx_payments_to_user    ON payments(to_user_id);
-CREATE INDEX idx_payments_deleted_at ON payments(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX idx_payments_active_group_created ON payments(group_id, created_at DESC) WHERE deleted_at IS NULL;
 
 CREATE INDEX idx_messages_group_id_created ON messages(group_id, created_at DESC);
-CREATE INDEX idx_messages_deleted_at       ON messages(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX idx_messages_active_group_created ON messages(group_id, created_at DESC) WHERE deleted_at IS NULL;
 
 CREATE INDEX idx_mentions_mentioned_user ON mentions(mentioned_user_id);
 CREATE INDEX idx_mentions_message_id     ON mentions(message_id);
@@ -571,7 +571,7 @@ BEGIN
     NEW.group_id,
     'system_event',
     COALESCE(from_name, 'Someone') || ' paid ' || COALESCE(to_name, 'Someone')
-      || ' · ' || fn_currency_symbol(NEW.currency) || NEW.amount::text,
+      || ' · ' || fn_currency_symbol(NEW.currency) || to_char(NEW.amount, 'FM999999990.00'),
     NEW.id,
     NEW.created_at
   );
@@ -843,12 +843,21 @@ CREATE POLICY "users_select_own" ON users FOR SELECT USING (id = auth.uid());
 CREATE POLICY "users_update_own" ON users FOR UPDATE USING (id = auth.uid());
 
 -- 2. groups
-CREATE POLICY "groups_select_members" ON groups FOR SELECT USING (is_member(id));
-CREATE POLICY "groups_write_owner_admin" ON groups FOR ALL USING (is_admin_or_owner(id));
+CREATE POLICY "groups_select_members"    ON groups FOR SELECT USING (is_member(id));
+CREATE POLICY "groups_insert_owner"      ON groups FOR INSERT WITH CHECK (owner_id = auth.uid());
+CREATE POLICY "groups_update_owner_admin" ON groups FOR UPDATE USING (is_admin_or_owner(id));
+CREATE POLICY "groups_delete_owner_admin" ON groups FOR DELETE USING (is_admin_or_owner(id));
 
 -- 3. group_members
 CREATE POLICY "group_members_select_visible" ON group_members FOR SELECT USING (is_member(group_id));
 CREATE POLICY "group_members_write_owner_admin" ON group_members FOR ALL USING (is_admin_or_owner(group_id));
+-- Bootstrap policy: allows inserting the initial owner row when the creating user owns the group.
+-- This is needed because is_admin_or_owner checks group_members, which doesn't exist yet on creation.
+CREATE POLICY "group_members_insert_initial_owner" ON group_members FOR INSERT WITH CHECK (
+  role = 'owner' AND EXISTS (
+    SELECT 1 FROM groups WHERE groups.id = group_members.group_id AND groups.owner_id = auth.uid()
+  )
+);
 
 -- 4. placeholders
 CREATE POLICY "placeholders_select_members" ON placeholders FOR SELECT USING (is_member(group_id));

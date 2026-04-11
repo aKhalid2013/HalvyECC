@@ -9,12 +9,19 @@ SELECT is( (SELECT count(*) FROM line_items), 5::bigint, 'Should have 5 line_ite
 SELECT cmp_ok( (SELECT count(*) FROM line_item_splits), '>=', 3::bigint, 'Should have at least 3 splits' );
 SELECT is( (SELECT count(*) FROM payments), 1::bigint, 'Should have 1 payment seeded' );
 
--- Verify XOR integrity on an expense
-SELECT ok(
-  (payer_user_id IS NOT NULL AND payer_placeholder_id IS NULL) OR
-  (payer_user_id IS NULL AND payer_placeholder_id IS NOT NULL),
+-- Verify XOR integrity holds for ALL seeded expenses (not just one row)
+SELECT is(
+  (
+    SELECT count(*)
+    FROM expenses
+    WHERE NOT (
+      (payer_user_id IS NOT NULL AND payer_placeholder_id IS NULL) OR
+      (payer_user_id IS NULL AND payer_placeholder_id IS NOT NULL)
+    )
+  ),
+  0::bigint,
   'Payer XOR constraint should hold for all seeded expenses'
-) FROM expenses LIMIT 1;
+);
 
 SELECT * FROM finish();
 ROLLBACK;

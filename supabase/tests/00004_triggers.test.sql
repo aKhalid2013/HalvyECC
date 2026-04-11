@@ -45,7 +45,7 @@ UPDATE expenses SET deleted_at = now() WHERE id = '07070707-0707-0707-0707-07070
 -- Note: auth.uid() returns NULL in the pgTAP test context (no authenticated session),
 -- so the editor name falls back to 'Someone' via COALESCE in fn_expense_edit_msg.
 SELECT results_eq(
-  'SELECT body FROM messages WHERE expense_id = ''07070707-0707-0707-0707-070707070707'' ORDER BY created_at ASC',
+  'SELECT body FROM messages WHERE expense_id = ''07070707-0707-0707-0707-070707070707'' ORDER BY created_at ASC, id ASC',
   ARRAY[
     'Test User added "Dinner expense"',
     'Someone edited "Updated Dinner"',
