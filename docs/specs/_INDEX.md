@@ -15,6 +15,7 @@
 |----|-------|--------|----------|------------|-------------|--------|
 | SPEC-001 | Expo Infrastructure | ✔️ verified | P0 | M | passed | feat/SPEC-001-expo |
 | SPEC-002 | Database — Project, Schema, Enums, Generics | ✔️ verified | P0 | L | passed | feat/SPEC-002-database |
+| SPEC-003 | Auth — Supabase Auth, Client Singleton, Auth Gate, Sign-In Screens | 🟢 approved | P0 | L | passed | feat/SPEC-003-auth |
 
 ## Phase 2 — Groups & Chat
 
