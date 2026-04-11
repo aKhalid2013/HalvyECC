@@ -377,7 +377,7 @@ return { data: toCamel<User>(data), error: null }
 
 ## TASK-7: Auth State Store (Zustand)
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-11
 **Estimated size:** S
 
@@ -438,7 +438,7 @@ Note: `reset()` sets `isLoading: false` (not `true`) because initial hydration i
 
 ## TASK-8: QueryProvider
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-13
 **Estimated size:** S
 
@@ -488,7 +488,7 @@ To test config values: extract `queryClient` as a named export or expose a `getC
 
 ## TASK-9: AuthProvider
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-12
 **Estimated size:** M
 
@@ -555,7 +555,7 @@ For testing: mock `@/api/auth` → `onAuthStateChange` captures the callback; ca
 
 ## TASK-10: Root Layout + Auth Gate + Entry Redirect
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-14, AC-15, AC-16
 **Estimated size:** M
 
