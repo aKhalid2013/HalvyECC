@@ -415,7 +415,7 @@ interface RecordPaymentPayload {
 ```
 
 **Notes:**
-- `recordPayment` atomically creates a `payments` row and a `system_event` message: *"[from] paid [to] · $[amount]"*.
+- `recordPayment` atomically creates a `payments` row and a `system_event` message: *"[from] paid [to] · {symbol}[amount]"*. The currency symbol is resolved per group currency using `fn_currency_symbol()` (e.g. `$25.00` for USD, `€25.00` for EUR). Currencies without a defined symbol fall back to their ISO code (e.g. `AED 25.00`).
 - `deletePayment` is a soft delete. Callable by the payment creator or group admin/owner. Reverses the payment's balance contribution.
 - There is no `acknowledgeSettlement` or `giveRoutingConsent` — payments are self-contained facts.
 

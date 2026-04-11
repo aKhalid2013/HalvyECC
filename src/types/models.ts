@@ -186,6 +186,7 @@ export interface Notification {
   expenseId: string | null;
   paymentId: string | null;
   messageId: string | null;
+  standingOrderId: string | null;
   notificationType: NotificationType;
   body: string;
   isRead: boolean;

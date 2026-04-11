@@ -415,16 +415,17 @@ CREATE TYPE notification_type AS ENUM (
 );
 
 CREATE TABLE notifications (
-  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id             UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  group_id            UUID REFERENCES groups(id) ON DELETE CASCADE,
-  expense_id          UUID REFERENCES expenses(id) ON DELETE SET NULL,
-  payment_id          UUID REFERENCES payments(id) ON DELETE SET NULL,
-  message_id          UUID REFERENCES messages(id) ON DELETE SET NULL,
-  notification_type   notification_type NOT NULL,
-  body                TEXT NOT NULL,
-  is_read             BOOLEAN NOT NULL DEFAULT false,
-  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id            UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  group_id           UUID REFERENCES groups(id) ON DELETE CASCADE,
+  expense_id         UUID REFERENCES expenses(id) ON DELETE SET NULL,
+  payment_id         UUID REFERENCES payments(id) ON DELETE SET NULL,
+  message_id         UUID REFERENCES messages(id) ON DELETE SET NULL,
+  standing_order_id  UUID REFERENCES standing_orders(id) ON DELETE SET NULL,
+  notification_type  notification_type NOT NULL,
+  body               TEXT NOT NULL,
+  is_read            BOOLEAN NOT NULL DEFAULT false,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ```
 
@@ -500,10 +501,10 @@ Full RLS SQL is defined in `supabase/migrations/`.
 | Post system message on expense create | INSERT on `expenses` | Insert `system_event` message: *"[creator] added [title]"* |
 | Post system message on expense edit | UPDATE on `expenses` | Insert `system_event` message: *"[editor] edited [title]"* |
 | Post system message on expense delete | UPDATE `deleted_at` on `expenses` | Insert `system_event` message: *"[actor] deleted [title]"* |
-| Post system message on payment | INSERT on `payments` | Insert `system_event` message: *"[from] paid [to] · $[amount]"* |
+| Post system message on payment | INSERT on `payments` | Insert `system_event` message: *"[from] paid [to] · {symbol}[amount]"* — symbol resolved by `fn_currency_symbol()` (e.g. `$25.00` for USD, `€25.00` for EUR); falls back to ISO code for unlisted currencies |
 | Mention notification | INSERT on `mentions` | Insert `mention` notification for each mentioned user |
-| Item reassignment notification | INSERT / UPDATE on `line_item_splits` where `user_id` changes | Insert batched `item_reassigned` notification to affected user |
-| Owner transfer | DELETE on `users` or UPDATE `deleted_at` on `users` | Reassign `groups.owner_id` to earliest `joined_at` member |
+| Item reassignment notification | UPDATE on `line_item_splits` where `user_id` changes | Insert `item_reassigned` notification to the **previous** assignee (`OLD.user_id`) whose item was taken |
+| Owner transfer | UPDATE `deleted_at` on `users` | For each group this user owns: reassign `owner_id` to the earliest `joined_at` live member. If no other member exists the group retains the soft-deleted user as owner (orphaned group — no cascade delete). |
 | Placeholder claim check | INSERT on `users` | Check new user's email/phone against unclaimed placeholders; if matches found, trigger `placeholder_claim_available` notification |
 | Standing order execution | Scheduled (pg_cron, daily at 00:05 UTC) | For each active order where `next_run_at <= now()`: insert `expenses` + `line_items` + optional `line_item_splits` (fixed mode) + `system_event` message; update `next_run_at`; reset `consecutive_failures` on success |
 | Standing order failure handling | On standing order execution error | Increment `consecutive_failures`; set `last_error` + `last_error_at`; if `consecutive_failures >= 3`: set `is_active = false`, send `standing_order_failed` notification to owner + all admins |

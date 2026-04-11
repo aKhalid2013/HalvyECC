@@ -42,11 +42,13 @@ UPDATE expenses SET title = 'Updated Dinner' WHERE id = '07070707-0707-0707-0707
 -- 3.3. Expense Delete Message
 UPDATE expenses SET deleted_at = now() WHERE id = '07070707-0707-0707-0707-070707070707';
 
+-- Note: auth.uid() returns NULL in the pgTAP test context (no authenticated session),
+-- so the editor name falls back to 'Someone' via COALESCE in fn_expense_edit_msg.
 SELECT results_eq(
   'SELECT body FROM messages WHERE expense_id = ''07070707-0707-0707-0707-070707070707'' ORDER BY created_at ASC',
   ARRAY[
     'Test User added "Dinner expense"',
-    'Expense "Updated Dinner" was updated',
+    'Someone edited "Updated Dinner"',
     'Expense "Updated Dinner" was deleted'
   ],
   'Should record full expense lifecycle in messages'
@@ -58,7 +60,7 @@ VALUES ('08080808-0808-0808-0808-080808080808', '00000000-0000-0000-0000-0000000
 
 SELECT results_eq(
   'SELECT body FROM messages WHERE payment_id = ''08080808-0808-0808-0808-080808080808''',
-  ARRAY['Test User paid Test User · USD 25.00'],
+  ARRAY['Test User paid Test User · $25.00'],
   'Should create a system message when payment is recorded'
 );
 

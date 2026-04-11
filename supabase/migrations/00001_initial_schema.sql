@@ -320,16 +320,17 @@ ALTER TABLE expenses
 -- 13. notifications
 -- ----------------------------------------------------------------------------
 CREATE TABLE notifications (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  group_id          UUID REFERENCES groups(id) ON DELETE CASCADE,
-  expense_id        UUID REFERENCES expenses(id) ON DELETE SET NULL,
-  payment_id        UUID REFERENCES payments(id) ON DELETE SET NULL,
-  message_id        UUID REFERENCES messages(id) ON DELETE SET NULL,
-  notification_type notification_type NOT NULL,
-  body              TEXT NOT NULL,
-  is_read           BOOLEAN NOT NULL DEFAULT false,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id            UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  group_id           UUID REFERENCES groups(id) ON DELETE CASCADE,
+  expense_id         UUID REFERENCES expenses(id) ON DELETE SET NULL,
+  payment_id         UUID REFERENCES payments(id) ON DELETE SET NULL,
+  message_id         UUID REFERENCES messages(id) ON DELETE SET NULL,
+  standing_order_id  UUID REFERENCES standing_orders(id) ON DELETE SET NULL,
+  notification_type  notification_type NOT NULL,
+  body               TEXT NOT NULL,
+  is_read            BOOLEAN NOT NULL DEFAULT false,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ----------------------------------------------------------------------------
@@ -414,6 +415,45 @@ CREATE UNIQUE INDEX one_owner_per_group ON group_members(group_id) WHERE role = 
 
 -- ============ TRIGGER FUNCTIONS ============
 
+-- 0. fn_currency_symbol
+-- Maps ISO 4217 currency codes to display symbols for system message bodies.
+-- Falls back to the ISO code itself for unlisted currencies so messages are
+-- always readable even when a future currency is added without updating this list.
+CREATE OR REPLACE FUNCTION fn_currency_symbol(code TEXT)
+RETURNS TEXT AS $$
+BEGIN
+  RETURN CASE code
+    WHEN 'USD' THEN '$'
+    WHEN 'EUR' THEN '€'
+    WHEN 'GBP' THEN '£'
+    WHEN 'CAD' THEN 'CA$'
+    WHEN 'AUD' THEN 'A$'
+    WHEN 'NZD' THEN 'NZ$'
+    WHEN 'JPY' THEN '¥'
+    WHEN 'CNY' THEN '¥'
+    WHEN 'HKD' THEN 'HK$'
+    WHEN 'SGD' THEN 'S$'
+    WHEN 'CHF' THEN 'CHF'
+    WHEN 'INR' THEN '₹'
+    WHEN 'KRW' THEN '₩'
+    WHEN 'MXN' THEN 'MX$'
+    WHEN 'BRL' THEN 'R$'
+    WHEN 'TRY' THEN '₺'
+    WHEN 'SEK' THEN 'kr'
+    WHEN 'NOK' THEN 'kr'
+    WHEN 'DKK' THEN 'kr'
+    -- Gulf currencies (common in Halvy's target market)
+    WHEN 'AED' THEN 'AED'
+    WHEN 'SAR' THEN 'SAR'
+    WHEN 'KWD' THEN 'KWD'
+    WHEN 'QAR' THEN 'QAR'
+    WHEN 'BHD' THEN 'BHD'
+    WHEN 'OMR' THEN 'OMR'
+    ELSE code  -- fallback: ISO code is always readable
+  END;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
 -- 1. fn_balance_broadcast
 -- Broadcasts a notification to the Realtime channel 'balances:{group_id}'
 CREATE OR REPLACE FUNCTION fn_balance_broadcast()
@@ -460,7 +500,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- 3. fn_expense_edit_msg
--- Inserts system message on substantive edits
+-- Inserts system message on substantive edits: "[editor] edited [title]"
 CREATE OR REPLACE FUNCTION fn_expense_edit_msg()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -468,11 +508,15 @@ DECLARE
 BEGIN
   -- Only fire if title or total_amount changed and it's not a soft-delete (handled by delete_msg)
   IF (NEW.deleted_at IS NULL AND (OLD.title <> NEW.title OR OLD.total_amount <> NEW.total_amount)) THEN
+    -- auth.uid() resolves to the calling user in authenticated PostgREST requests;
+    -- falls back to 'Someone' for service-role or cron-triggered updates.
+    SELECT display_name INTO editor_name FROM users WHERE id = auth.uid();
+
     INSERT INTO messages (group_id, message_type, body, expense_id, created_at)
     VALUES (
       NEW.group_id,
       'system_event',
-      'Expense "' || NEW.title || '" was updated',
+      COALESCE(editor_name, 'Someone') || ' edited "' || NEW.title || '"',
       NEW.id,
       now()
     );
@@ -526,7 +570,8 @@ BEGIN
   VALUES (
     NEW.group_id,
     'system_event',
-    COALESCE(from_name, 'Someone') || ' paid ' || COALESCE(to_name, 'Someone') || ' · ' || NEW.currency || ' ' || NEW.amount::text,
+    COALESCE(from_name, 'Someone') || ' paid ' || COALESCE(to_name, 'Someone')
+      || ' · ' || fn_currency_symbol(NEW.currency) || NEW.amount::text,
     NEW.id,
     NEW.created_at
   );
@@ -535,23 +580,36 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- 6. fn_owner_transfer
--- Soft-delete of user: reassign groups.owner_id to earliest joined member
+-- Soft-delete of user: reassign groups.owner_id to earliest joined member.
+-- If the owner is the last member of a group, the group is left with the
+-- soft-deleted user as owner (orphaned). This is intentional — we do not
+-- cascade-delete groups, and a group with no live members is effectively
+-- inactive. An admin can manually clean it up via the service role.
 CREATE OR REPLACE FUNCTION fn_owner_transfer()
 RETURNS TRIGGER AS $$
+DECLARE
+  grp_id      UUID;
+  new_owner   UUID;
 BEGIN
   IF (OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL) THEN
-    -- For every group this user owns
-    UPDATE groups
-    SET owner_id = (
-      SELECT user_id
+    FOR grp_id IN
+      SELECT id FROM groups WHERE owner_id = OLD.id
+    LOOP
+      SELECT user_id INTO new_owner
       FROM group_members
-      WHERE group_id = groups.id
+      WHERE group_id = grp_id
         AND user_id <> OLD.id
         AND user_id IS NOT NULL
       ORDER BY joined_at ASC
-      LIMIT 1
-    )
-    WHERE owner_id = OLD.id;
+      LIMIT 1;
+
+      -- Only transfer if there is another live member to receive ownership.
+      -- If no other member exists the group retains its current owner_id
+      -- (pointing at the soft-deleted user) to avoid a NOT NULL violation.
+      IF new_owner IS NOT NULL THEN
+        UPDATE groups SET owner_id = new_owner WHERE id = grp_id;
+      END IF;
+    END LOOP;
   END IF;
   RETURN NEW;
 END;
@@ -602,7 +660,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- 9. fn_item_reassign_notification
--- Notification when line_item_splits.user_id changes
+-- Notification when line_item_splits.user_id changes.
+-- Notifies the PREVIOUS assignee (OLD.user_id) who had the item taken from them,
+-- per PRD Section 5.D: "If a member's already-claimed item is reassigned by
+-- someone else, they receive a batched notification."
 CREATE OR REPLACE FUNCTION fn_item_reassign_notification()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -613,11 +674,11 @@ BEGIN
 
     INSERT INTO notifications (user_id, group_id, expense_id, notification_type, body)
     VALUES (
-      NEW.user_id,
+      OLD.user_id,  -- the previous assignee who lost the item
       (SELECT group_id FROM expenses WHERE id = NEW.expense_id),
       NEW.expense_id,
       'item_reassigned',
-      'A line item ("' || COALESCE(item_desc, 'Unnamed item') || '") was reassigned to you.'
+      'Your item ("' || COALESCE(item_desc, 'Unnamed item') || '") was reassigned.'
     );
   END IF;
   RETURN NEW;
@@ -749,6 +810,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+-- Revoke default PUBLIC execute on SECURITY DEFINER helpers; grant to authenticated only.
+REVOKE EXECUTE ON FUNCTION is_member(UUID) FROM PUBLIC;
+GRANT  EXECUTE ON FUNCTION is_member(UUID) TO authenticated;
+
+REVOKE EXECUTE ON FUNCTION is_admin_or_owner(UUID) FROM PUBLIC;
+GRANT  EXECUTE ON FUNCTION is_admin_or_owner(UUID) TO authenticated;
+
 
 -- ============ ROW LEVEL SECURITY ============
 
@@ -796,11 +864,7 @@ CREATE POLICY "expenses_delete_creator_owner_admin" ON expenses FOR DELETE USING
 );
 
 -- 6. line_items
-CREATE POLICY "line_items_select_members" ON line_items FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM expenses e WHERE e.id = line_items.expense_id AND is_member(e.group_id)
-  )
-);
+-- FOR ALL covers SELECT + INSERT + UPDATE + DELETE; no separate SELECT policy needed.
 CREATE POLICY "line_items_all_members" ON line_items FOR ALL USING (
   EXISTS (
     SELECT 1 FROM expenses e WHERE e.id = line_items.expense_id AND is_member(e.group_id)
@@ -808,11 +872,7 @@ CREATE POLICY "line_items_all_members" ON line_items FOR ALL USING (
 );
 
 -- 7. line_item_splits
-CREATE POLICY "line_item_splits_select_members" ON line_item_splits FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM expenses e WHERE e.id = line_item_splits.expense_id AND is_member(e.group_id)
-  )
-);
+-- FOR ALL covers SELECT + INSERT + UPDATE + DELETE; no separate SELECT policy needed.
 CREATE POLICY "line_item_splits_all_members" ON line_item_splits FOR ALL USING (
   EXISTS (
     SELECT 1 FROM expenses e WHERE e.id = line_item_splits.expense_id AND is_member(e.group_id)
@@ -832,14 +892,14 @@ CREATE POLICY "messages_insert_members" ON messages FOR INSERT WITH CHECK (is_me
 CREATE POLICY "messages_delete_own" ON messages FOR DELETE USING (sender_user_id = auth.uid());
 
 -- 10. mentions
+-- Reads: any group member. Writes: system only (triggers insert mentions; direct client writes denied).
 CREATE POLICY "mentions_select_members" ON mentions FOR SELECT USING (is_member(group_id));
+CREATE POLICY "mentions_insert_deny"    ON mentions FOR INSERT WITH CHECK (false);
+CREATE POLICY "mentions_update_deny"    ON mentions FOR UPDATE USING (false);
+CREATE POLICY "mentions_delete_deny"    ON mentions FOR DELETE USING (false);
 
 -- 11. message_reactions
-CREATE POLICY "message_reactions_select_members" ON message_reactions FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM messages m WHERE m.id = message_reactions.message_id AND is_member(m.group_id)
-  )
-);
+-- FOR ALL covers SELECT + INSERT + UPDATE + DELETE; no separate SELECT policy needed.
 CREATE POLICY "message_reactions_all_members" ON message_reactions FOR ALL USING (
   EXISTS (
     SELECT 1 FROM messages m WHERE m.id = message_reactions.message_id AND is_member(m.group_id)
@@ -856,12 +916,12 @@ CREATE POLICY "standing_orders_delete_owner_admin" ON standing_orders FOR DELETE
 CREATE POLICY "notifications_select_own" ON notifications FOR SELECT USING (user_id = auth.uid());
 
 -- 14. group_invites
+-- Token validation (invite link preview for unauthenticated/non-member users)
+-- is handled at the API layer (Edge Function), not here. current_setting-based
+-- RLS policies are unreliable in Supabase PostgREST; invite tokens must be
+-- validated server-side before any DB read is permitted.
 CREATE POLICY "group_invites_select_members" ON group_invites FOR SELECT USING (is_member(group_id));
-CREATE POLICY "group_invites_select_by_token" ON group_invites FOR SELECT USING (
-  auth.uid() IS NOT NULL
-  AND token = current_setting('request.token', true)
-);
-CREATE POLICY "group_invites_owner_admin" ON group_invites FOR ALL USING (is_admin_or_owner(group_id));
+CREATE POLICY "group_invites_owner_admin"    ON group_invites FOR ALL    USING (is_admin_or_owner(group_id));
 
 -- 15. rate_limits
 CREATE POLICY "rate_limits_deny_all" ON rate_limits FOR ALL USING (false);
