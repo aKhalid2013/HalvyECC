@@ -18,7 +18,7 @@
 
 ## TASK-1: Auth Sync Trigger Migration + Type Regeneration
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-1, AC-2, AC-3, AC-28
 **Estimated size:** S
 
@@ -95,7 +95,7 @@ MIGRATION_LOG.md format: date, description, DOWN rollback section (copy DROP sta
 
 ## TASK-2: Install npm Dependencies
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-24, AC-25, AC-26 (partial — enables bundle compilation)
 **Estimated size:** S
 
@@ -139,7 +139,7 @@ node_modules/(?!(expo|expo-router|expo-secure-store|expo-auth-session|expo-web-b
 
 ## TASK-3: API Types + toCamel Utility
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-6 (partial — types only), AC-8 (partial — types only)
 **Estimated size:** S
 
@@ -196,7 +196,7 @@ Enhance `toCamel` to handle: `null` input → return `null`; arrays → map each
 
 ## TASK-4: Supabase Client Singleton
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-4, AC-5
 **Estimated size:** S
 
@@ -256,7 +256,7 @@ For unit testing: mock `Platform`, mock `expo-secure-store`, mock `@supabase/sup
 
 ## TASK-5: Auth API Module
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-6, AC-7
 **Estimated size:** M
 
@@ -323,7 +323,7 @@ Error wrapping pattern applies to all functions. `onAuthStateChange` return valu
 
 ## TASK-6: Users API Module
 
-**Status:** pending
+**Status:** ✅ done
 **Spec ACs covered:** AC-8, AC-9, AC-10
 **Estimated size:** M
 

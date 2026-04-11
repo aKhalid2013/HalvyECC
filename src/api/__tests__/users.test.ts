@@ -8,39 +8,50 @@ jest.mock('../client', () => ({
     auth: {
       getUser: jest.fn(),
     },
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          single: jest.fn(),
-        })),
-      })),
-      update: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          single: jest.fn(),
-        })),
-      })),
-    })),
+    from: jest.fn(),
   },
 }))
 
 jest.mock('@/utils/transforms', () => ({
-  toCamel: jest.fn((obj) => obj), // Pass through by default for testing
+  toCamel: jest.fn((obj) => obj),
 }))
+
+// Get mock references
+const mockFrom = supabase.from as jest.Mock
+const mockSingle = jest.fn()
+const mockEq = jest.fn(() => ({ single: mockSingle }))
+const mockSelect = jest.fn(() => ({ eq: mockEq }))
+const mockUpdate = jest.fn(() => ({ eq: mockEq }))
+
+mockFrom.mockReturnValue({
+  select: mockSelect,
+  update: mockUpdate,
+})
 
 describe('Users API Module', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockSingle.mockReset()
+    mockEq.mockClear()
+    mockSelect.mockClear()
+    mockUpdate.mockClear()
+    mockFrom.mockClear()
+    mockFrom.mockReturnValue({
+      select: mockSelect,
+      update: mockUpdate,
+    })
   })
 
   describe('getUser', () => {
     it('fetches user and applies toCamel', async () => {
       const mockUser = { id: 'user-1', display_name: 'Test' }
-      const fromSpy = supabase.from as jest.Mock
-      fromSpy().select().eq().single.mockResolvedValue({ data: mockUser, error: null })
+      mockSingle.mockResolvedValue({ data: mockUser, error: null })
 
       const result = await getUser('user-1')
 
-      expect(fromSpy).toHaveBeenCalledWith('users')
+      expect(mockFrom).toHaveBeenCalledWith('users')
+      expect(mockSelect).toHaveBeenCalled()
+      expect(mockEq).toHaveBeenCalledWith('id', 'user-1')
       expect(toCamel).toHaveBeenCalledWith(mockUser)
       expect(result.data).toEqual(mockUser)
     })
@@ -52,12 +63,12 @@ describe('Users API Module', () => {
       const mockPublicUser = { id: 'user-1', display_name: 'Test', deleted_at: null }
       
       ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: mockAuthUser }, error: null })
-      const fromSpy = supabase.from as jest.Mock
-      fromSpy().select().eq().single.mockResolvedValue({ data: mockPublicUser, error: null })
+      mockSingle.mockResolvedValue({ data: mockPublicUser, error: null })
 
       const result = await getCurrentUser()
 
       expect(supabase.auth.getUser).toHaveBeenCalled()
+      expect(mockEq).toHaveBeenCalledWith('id', 'user-1')
       expect(result.data).toEqual(mockPublicUser)
     })
 
@@ -77,8 +88,7 @@ describe('Users API Module', () => {
       const mockPublicUser = { id: 'user-1', deleted_at: '2026-04-11T12:00:00Z' }
       
       ;(supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: mockAuthUser }, error: null })
-      const fromSpy = supabase.from as jest.Mock
-      fromSpy().select().eq().single.mockResolvedValue({ data: mockPublicUser, error: null })
+      mockSingle.mockResolvedValue({ data: mockPublicUser, error: null })
 
       const result = await getCurrentUser()
 
@@ -91,41 +101,41 @@ describe('Users API Module', () => {
 
   describe('updateUser', () => {
     it('converts payload to snake_case and updates', async () => {
-      const fromSpy = supabase.from as jest.Mock
-      fromSpy().update().eq().single.mockResolvedValue({ data: { id: 'u1' }, error: null })
+      mockSingle.mockResolvedValue({ data: { id: 'u1' }, error: null })
 
       await updateUser('u1', { displayName: 'New Name', avatarUrl: 'new-url' })
 
-      expect(fromSpy().update).toHaveBeenCalledWith({
+      expect(mockUpdate).toHaveBeenCalledWith({
         display_name: 'New Name',
         avatar_url: 'new-url',
       })
+      expect(mockEq).toHaveBeenCalledWith('id', 'u1')
     })
   })
 
   describe('deleteUser', () => {
     it('performs soft delete by setting deleted_at', async () => {
-      const fromSpy = supabase.from as jest.Mock
-      fromSpy().update().eq().single.mockResolvedValue({ data: {}, error: null })
+      mockSingle.mockResolvedValue({ data: {}, error: null })
 
       await deleteUser('u1')
 
-      expect(fromSpy().update).toHaveBeenCalledWith({
+      expect(mockUpdate).toHaveBeenCalledWith({
         deleted_at: expect.any(String),
       })
+      expect(mockEq).toHaveBeenCalledWith('id', 'u1')
     })
   })
 
   describe('reactivateUser', () => {
     it('clears deleted_at to reactivate', async () => {
-      const fromSpy = supabase.from as jest.Mock
-      fromSpy().update().eq().single.mockResolvedValue({ data: {}, error: null })
+      mockSingle.mockResolvedValue({ data: {}, error: null })
 
       await reactivateUser('u1')
 
-      expect(fromSpy().update).toHaveBeenCalledWith({
+      expect(mockUpdate).toHaveBeenCalledWith({
         deleted_at: null,
       })
+      expect(mockEq).toHaveBeenCalledWith('id', 'u1')
     })
   })
 })

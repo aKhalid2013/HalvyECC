@@ -1,5 +1,4 @@
 import { Platform } from 'react-native'
-import { createClient } from '@supabase/supabase-js'
 
 // Mocking dependencies
 jest.mock('@supabase/supabase-js', () => ({
@@ -32,7 +31,7 @@ describe('Supabase Client Singleton', () => {
       configurable: true,
     })
 
-    // Import the client after setting the mock
+    const { createClient } = require('@supabase/supabase-js')
     require('../client')
 
     expect(createClient).toHaveBeenCalledWith(
@@ -60,7 +59,7 @@ describe('Supabase Client Singleton', () => {
       configurable: true,
     })
 
-    // Import the client after setting the mock
+    const { createClient } = require('@supabase/supabase-js')
     require('../client')
 
     expect(createClient).toHaveBeenCalledWith(
