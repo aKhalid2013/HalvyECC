@@ -87,3 +87,17 @@ DROP EXTENSION IF EXISTS pg_cron CASCADE;
 
 COMMIT;
 ```
+
+---
+
+## `00004_auth_sync_trigger.sql`
+
+- **Date:** 2026-04-11
+- **Description:** Auth sync trigger for SPEC-003. Creates `fn_auth_sync_user()` (SECURITY DEFINER) and `trg_auth_sync_user` (AFTER INSERT ON auth.users FOR EACH ROW). Syncs new Supabase Auth sign-ups into `public.users` with metadata extraction (`display_name` from `full_name`→`name`→email-local-part; `avatar_url` from `avatar_url`→`picture`; `auth_provider` from `provider`→`magic_link`). Uses `INSERT ... ON CONFLICT (id) DO UPDATE` for idempotent multi-provider merge, preserving existing non-null `display_name`/`avatar_url` on conflict.
+
+### DOWN Rollback
+
+```sql
+DROP TRIGGER IF EXISTS trg_auth_sync_user ON auth.users;
+DROP FUNCTION IF EXISTS public.fn_auth_sync_user();
+```
