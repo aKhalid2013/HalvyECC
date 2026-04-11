@@ -1,0 +1,13 @@
+{
+  "spec_id": "SPEC-002",
+  "date": "2026-04-11",
+  "platform": "antigravity",
+  "verdict": "PASS",
+  "criteria_total": 20,
+  "criteria_pass": 20,
+  "criteria_fail": 0,
+  "criteria_partial": 0,
+  "failure_categories": [],
+  "dev_iterations_before_verify": 3,
+  "time_from_spec_approval_days": 1
+}

@@ -13,7 +13,8 @@
 
 | ID | Title | Status | Priority | Complexity | Feasibility | Branch |
 |----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| SPEC-001 | Expo Infrastructure | ✔️ verified | P0 | M | passed | feat/SPEC-001-expo |
+| SPEC-002 | Database — Project, Schema, Enums, Generics | ✔️ verified | P0 | L | passed | feat/SPEC-002-database |
 
 ## Phase 2 — Groups & Chat
 
