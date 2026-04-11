@@ -20,7 +20,7 @@ This plan implements the entire Halvy database foundation: a single Supabase mig
 ## Task List
 
 ### TASK-1: Supabase Init + Extensions + Enums + 16 Tables (DDL skeleton)
-**Status:** pending
+**Status:** ✅ done
 **Estimated effort:** L
 **Acceptance Criteria Covered:** AC-1 (partial), AC-2, AC-3, AC-5, AC-20 (partial)
 
