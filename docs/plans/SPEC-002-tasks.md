@@ -351,7 +351,7 @@ Read before starting:
 ---
 
 ### TASK-9: pgTAP SQL Tests
-**Status:** pending
+**Status:** ✅ done
 **Estimated effort:** L
 **Acceptance Criteria Covered:** AC-3, AC-4, AC-5, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12, AC-13, AC-14
 
