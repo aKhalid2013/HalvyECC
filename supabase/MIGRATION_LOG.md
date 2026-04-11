@@ -34,6 +34,19 @@
 
 ---
 
+## `00002_copilot_review_fixes.sql`
+
+- **Date:** 2026-04-11
+- **Description:** Incremental fixes from Copilot PR review on SPEC-002. Addresses RLS bootstrap gaps, non-selective partial indexes, and payment message formatting.
+
+### Changes
+- **groups RLS**: split `FOR ALL` into separate `INSERT` (owner_id check), `UPDATE`, and `DELETE` policies so new group creation isn't blocked by `is_admin_or_owner()` querying an empty `group_members` table
+- **group_members RLS**: added `group_members_insert_initial_owner` bootstrap INSERT policy for the first owner row
+- **Indexes**: replaced `idx_expenses_deleted_at`, `idx_payments_deleted_at`, `idx_messages_deleted_at` (all non-selective) with composite `(group_id, created_at DESC) WHERE deleted_at IS NULL` partial indexes
+- **fn_payment_msg**: `NEW.amount::text` → `to_char(NEW.amount, 'FM999999990.00')` for consistent 2-decimal formatting
+
+---
+
 ### DOWN Rollback (for revert)
 
 To revert `00001_initial_schema.sql`, execute the following commands in order. These drops are in reverse foreign-key dependency order.
