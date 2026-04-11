@@ -315,7 +315,7 @@ This file provides idiomatic TypeScript types for the rest of the codebase. All 
 ---
 
 ### TASK-8: Migration Log + Documentation
-**Status:** pending
+**Status:** ✅ done
 **Estimated effort:** S
 **Acceptance Criteria Covered:** AC-19
 
