@@ -1,5 +1,5 @@
 # PO-CONTEXT — Halvy Live Progress Snapshot
-_Generated: 2026-04-06 09:00 UTC — do not edit manually_
+_Generated: 2026-04-11 14:47 UTC — do not edit manually_
 
 ---
 
@@ -10,7 +10,8 @@ _Generated: 2026-04-06 09:00 UTC — do not edit manually_
 ## Phase 1 — Foundation
 | ID | Title | Status | Priority | Complexity | Feasibility | Branch |
 |----|-------|--------|----------|------------|-------------|--------|
-| — | No specs yet | — | — | — | — | — |
+| SPEC-001 | Expo Infrastructure | ✔️ verified | P0 | M | passed | feat/SPEC-001-expo |
+| SPEC-002 | Database — Project, Schema, Enums, Generics | ✔️ verified | P0 | L | passed | feat/SPEC-002-database |
 ## Phase 2 — Groups & Chat
 | ID | Title | Status | Priority | Complexity | Feasibility | Branch |
 |----|-------|--------|----------|------------|-------------|--------|
@@ -32,8 +33,9 @@ _Generated: 2026-04-06 09:00 UTC — do not edit manually_
 
 ## 2. Verification Report Summaries
 
-> No verification reports found yet.
-
+### SPEC-002
+**Verdict:** unknown
+  *(no open issues)*
 
 ---
 
