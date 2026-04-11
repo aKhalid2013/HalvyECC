@@ -1,0 +1,3 @@
+name = "brainstorm"
+description = "Product Owner workflow: brainstorm features, run feasibility checks, write detailed specs. Triggers: \"brainstorm\", \"feature idea\", \"write spec\", \"PO mode\", \"requirements\"."
+file = ".agent-skills/po-agent/SKILL.md"

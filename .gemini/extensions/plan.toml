@@ -1,0 +1,3 @@
+name = "plan"
+description = "Implementation planning for a SPEC. Reads spec + codebase, produces a numbered task list file, then STOPS. Never writes source code."
+file = ".agent-skills/planner/SKILL.md"

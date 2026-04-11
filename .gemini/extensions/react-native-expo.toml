@@ -1,0 +1,3 @@
+name = "react-native-expo"
+description = "React Native and Expo patterns for Halvy. Covers Expo Router v3, NativeWind v4, FlashList, safe areas, keyboard handling, deep linking, Reanimated 3, and Expo-specific APIs."
+file = ".agent-skills/react-native-expo/SKILL.md"

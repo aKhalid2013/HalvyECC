@@ -1,0 +1,3 @@
+name = "e2e"
+description = "Mobile E2E testing for Halvy using Detox. Covers test setup, matchers, actions, gestures, network mocking, and critical user flow coverage."
+file = ".agent-skills/mobile-e2e/SKILL.md"
