@@ -90,10 +90,22 @@ COMMIT;
 
 ---
 
+## `00003_copilot_review_fixes_2.sql`
+
+- **Date:** 2026-04-11
+- **Description:** Addresses remaining Copilot PR review findings on SPEC-002 policies (missing `WITH CHECK` clauses) and `fn_owner_transfer` logic.
+
+### Changes
+- **fn_owner_transfer**: updated to demote the old owner and promote the new one in `group_members` simultaneously with the `groups.owner_id` update.
+- **RLS Policies**: added `WITH CHECK` clauses to `group_members`, `expenses`, `line_items`, and `line_item_splits` policies to prevent bypasses during INSERT/UPDATE.
+- **Deny-all Policies**: added `WITH CHECK (false)` to `rate_limits` and `ai_budget`.
+
+---
+
 ## `00004_auth_sync_trigger.sql`
 
 - **Date:** 2026-04-11
-- **Description:** Auth sync trigger for SPEC-003. Creates `fn_auth_sync_user()` (SECURITY DEFINER) and `trg_auth_sync_user` (AFTER INSERT ON auth.users FOR EACH ROW). Syncs new Supabase Auth sign-ups into `public.users` with metadata extraction (`display_name` from `full_name`→`name`→email-local-part; `avatar_url` from `avatar_url`→`picture`; `auth_provider` from `provider`→`magic_link`). Uses `INSERT ... ON CONFLICT (id) DO UPDATE` for idempotent multi-provider merge, preserving existing non-null `display_name`/`avatar_url` on conflict.
+- **Description:** Auth sync trigger for SPEC-003. Creates `fn_auth_sync_user()` (SECURITY DEFINER) and `trg_auth_sync_user` (AFTER INSERT ON auth.users FOR EACH ROW). Syncs new Supabase Auth sign-ups into `public.users` with metadata extraction. Idempotent multi-provider merge.
 
 ### DOWN Rollback
 
