@@ -1,10 +1,12 @@
 import React from 'react'
 import { render, act } from '@testing-library/react-native'
 import { Text } from 'react-native'
+import * as Linking from 'expo-linking'
 import AuthProvider from '../AuthProvider'
 import { onAuthStateChange } from '@/api/auth'
 import { getCurrentUser } from '@/api/users'
 import { useAuthStore } from '@/stores/authStore'
+import { supabase } from '@/api/client'
 
 // Mock dependencies
 jest.mock('@/api/auth', () => ({
@@ -13,6 +15,19 @@ jest.mock('@/api/auth', () => ({
 
 jest.mock('@/api/users', () => ({
   getCurrentUser: jest.fn(),
+}))
+
+jest.mock('@/api/client', () => ({
+  supabase: {
+    auth: {
+      setSession: jest.fn(),
+    },
+  },
+}))
+
+jest.mock('expo-linking', () => ({
+  addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+  getInitialURL: jest.fn(() => Promise.resolve(null)),
 }))
 
 // Mock session and user data
@@ -109,6 +124,31 @@ describe('AuthProvider', () => {
     expect(useAuthStore.getState().session).toBeNull()
     expect(useAuthStore.getState().user).toBeNull()
     expect(useAuthStore.getState().isLoading).toBe(false)
+  })
+
+  it('calls setSession when a magic link deep link is received', async () => {
+    const url = 'exp://192.168.100.33:8081#access_token=tok123&refresh_token=ref456&token_type=bearer'
+    ;(Linking.getInitialURL as jest.Mock).mockResolvedValue(url)
+    // Have onAuthStateChange immediately resolve loading so the component renders
+    ;(onAuthStateChange as jest.Mock).mockImplementation((cb: (s: null) => void) => {
+      cb(null)
+      return mockUnsubscribe
+    })
+
+    render(
+      <AuthProvider>
+        <Text>Child</Text>
+      </AuthProvider>
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(supabase.auth.setSession).toHaveBeenCalledWith({
+      access_token: 'tok123',
+      refresh_token: 'ref456',
+    })
   })
 
   it('sets error when getCurrentUser fails', async () => {

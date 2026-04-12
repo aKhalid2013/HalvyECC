@@ -77,7 +77,7 @@ export async function signOutAllDevices(): Promise<ApiResult<null>> {
  */
 export async function verifyOtp(email: string, token: string): Promise<ApiResult<Session | null>> {
   try {
-    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'magiclink' })
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
     if (error) return { data: null, error: { code: 'AUTH_ERROR', message: error.message } }
     return { data: data.session, error: null }
   } catch (err: unknown) {

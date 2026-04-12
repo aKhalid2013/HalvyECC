@@ -143,7 +143,7 @@ describe('Auth API Module', () => {
       expect(supabase.auth.verifyOtp).toHaveBeenCalledWith({
         email: 'test@example.com',
         token: '123456',
-        type: 'magiclink',
+        type: 'email',
       })
       expect(result).toEqual({ data: mockSession, error: null })
     })
