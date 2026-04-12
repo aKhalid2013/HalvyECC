@@ -49,7 +49,7 @@ export default function MagicLinkScreen() {
       const result = await verifyOtp(email, digits)
       setIsVerifying(false)
       if (result.error) {
-        setOtpError('Invalid or expired code. Try again or request a new link.')
+        setOtpError(result.error.message || 'Invalid or expired code. Try again or request a new link.')
         setOtp('')
       }
       // On success: AuthProvider's onAuthStateChange fires → store updates → auth gate redirects
