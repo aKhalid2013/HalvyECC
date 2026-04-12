@@ -1,6 +1,6 @@
 import { makeRedirectUri } from 'expo-auth-session'
 import { supabase } from '../client'
-import { signIn, signOut, signOutAllDevices, getSession, onAuthStateChange } from '../auth'
+import { signIn, signOut, signOutAllDevices, getSession, onAuthStateChange, verifyOtp } from '../auth'
 
 // Mocking dependencies
 jest.mock('../client', () => ({
@@ -11,6 +11,7 @@ jest.mock('../client', () => ({
       signOut: jest.fn(),
       getSession: jest.fn(),
       onAuthStateChange: jest.fn(),
+      verifyOtp: jest.fn(),
     },
   },
 }))
@@ -49,6 +50,7 @@ describe('Auth API Module', () => {
 
       expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({
         email: 'test@example.com',
+        options: { emailRedirectTo: 'halvy://redirect' },
       })
       expect(result).toEqual({ data: null, error: null })
     })
@@ -122,9 +124,42 @@ describe('Auth API Module', () => {
       const unsubscribe = onAuthStateChange(callback)
 
       expect(supabase.auth.onAuthStateChange).toHaveBeenCalledWith(expect.any(Function))
-      
+
       unsubscribe()
       expect(mockUnsubscribe).toHaveBeenCalled()
+    })
+  })
+
+  describe('verifyOtp', () => {
+    it('calls supabase.auth.verifyOtp with magiclink type', async () => {
+      const mockSession = { user: { id: '123' } }
+      ;(supabase.auth.verifyOtp as jest.Mock).mockResolvedValue({
+        data: { session: mockSession },
+        error: null,
+      })
+
+      const result = await verifyOtp('test@example.com', '123456')
+
+      expect(supabase.auth.verifyOtp).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        token: '123456',
+        type: 'magiclink',
+      })
+      expect(result).toEqual({ data: mockSession, error: null })
+    })
+
+    it('wraps Supabase errors', async () => {
+      ;(supabase.auth.verifyOtp as jest.Mock).mockResolvedValue({
+        data: { session: null },
+        error: { message: 'Token has expired' },
+      })
+
+      const result = await verifyOtp('test@example.com', '000000')
+
+      expect(result.error).toEqual({
+        code: 'AUTH_ERROR',
+        message: 'Token has expired',
+      })
     })
   })
 })

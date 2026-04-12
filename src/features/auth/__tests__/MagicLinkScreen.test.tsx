@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native'
 import { router } from 'expo-router'
-import { signIn } from '@/api/auth'
+import { signIn, verifyOtp } from '@/api/auth'
 import MagicLinkScreen from '../../../../app/(auth)/magic-link'
 
 // Mock dependencies
@@ -13,6 +13,7 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@/api/auth', () => ({
   signIn: jest.fn(),
+  verifyOtp: jest.fn(),
 }))
 
 describe('MagicLinkScreen', () => {
@@ -46,15 +47,16 @@ describe('MagicLinkScreen', () => {
 
   it('transitions to confirmation state on success', async () => {
     ;(signIn as jest.Mock).mockResolvedValue({ data: null, error: null })
-    const { getByText, getByPlaceholderText, queryByText } = render(<MagicLinkScreen />)
-    
+    const { getByText, getByPlaceholderText } = render(<MagicLinkScreen />)
+
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'test@halvy.com')
     fireEvent.press(getByText('Send Magic Link'))
 
     await waitFor(() => {
       expect(signIn).toHaveBeenCalledWith('magic_link', 'test@halvy.com')
       expect(getByText('Check your email')).toBeTruthy()
-      expect(getByText(/We sent a sign-in link to test@halvy.com/)).toBeTruthy()
+      expect(getByText(/We sent a sign-in link and code to/)).toBeTruthy()
+      expect(getByText('test@halvy.com')).toBeTruthy()
     })
   })
 
@@ -94,13 +96,54 @@ describe('MagicLinkScreen', () => {
     act(() => {
       jest.advanceTimersByTime(50000)
     })
-    expect(getByText('Resend')).toBeTruthy()
+    expect(getByText('Resend email')).toBeTruthy()
   })
 
   it('calls router.back when back buttons are pressed', () => {
     const { getByText } = render(<MagicLinkScreen />)
-    
+
     fireEvent.press(getByText(/Back to sign-in/))
     expect(router.back).toHaveBeenCalled()
+  })
+
+  it('auto-submits OTP when 6 digits are entered', async () => {
+    ;(signIn as jest.Mock).mockResolvedValue({ data: null, error: null })
+    ;(verifyOtp as jest.Mock).mockResolvedValue({ data: { user: { id: '123' } }, error: null })
+    const { getByText, getByPlaceholderText } = render(<MagicLinkScreen />)
+
+    fireEvent.changeText(getByPlaceholderText('you@example.com'), 'test@halvy.com')
+    fireEvent.press(getByText('Send Magic Link'))
+
+    await waitFor(() => {
+      expect(getByPlaceholderText('——————')).toBeTruthy()
+    })
+
+    fireEvent.changeText(getByPlaceholderText('——————'), '123456')
+
+    await waitFor(() => {
+      expect(verifyOtp).toHaveBeenCalledWith('test@halvy.com', '123456')
+    })
+  })
+
+  it('shows OTP error on failed verification', async () => {
+    ;(signIn as jest.Mock).mockResolvedValue({ data: null, error: null })
+    ;(verifyOtp as jest.Mock).mockResolvedValue({
+      data: null,
+      error: { code: 'AUTH_ERROR', message: 'Token has expired' },
+    })
+    const { getByText, getByPlaceholderText } = render(<MagicLinkScreen />)
+
+    fireEvent.changeText(getByPlaceholderText('you@example.com'), 'test@halvy.com')
+    fireEvent.press(getByText('Send Magic Link'))
+
+    await waitFor(() => {
+      expect(getByPlaceholderText('——————')).toBeTruthy()
+    })
+
+    fireEvent.changeText(getByPlaceholderText('——————'), '000000')
+
+    await waitFor(() => {
+      expect(getByText('Invalid or expired code. Try again or request a new link.')).toBeTruthy()
+    })
   })
 })

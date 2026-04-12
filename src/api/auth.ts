@@ -22,7 +22,11 @@ export async function signIn(provider: AuthProvider, email?: string): Promise<Ap
     }
 
     if (provider === 'magic_link') {
-      const { error } = await supabase.auth.signInWithOtp({ email: email! })
+      const redirectTo = makeRedirectUri()
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email!,
+        options: { emailRedirectTo: redirectTo },
+      })
       if (error) return { data: null, error: { code: 'AUTH_ERROR', message: error.message } }
       return { data: null, error: null }
     }
@@ -62,6 +66,20 @@ export async function signOutAllDevices(): Promise<ApiResult<null>> {
     const { error } = await supabase.auth.signOut({ scope: 'global' })
     if (error) return { data: null, error: { code: 'AUTH_ERROR', message: error.message } }
     return { data: null, error: null }
+  } catch (err: unknown) {
+    return { data: null, error: { code: 'AUTH_ERROR', message: err instanceof Error ? err.message : 'Unknown error' } }
+  }
+}
+
+/**
+ * Verifies a magic link OTP code (the 6-digit code from the email).
+ * Used as an alternative to clicking the email link on devices.
+ */
+export async function verifyOtp(email: string, token: string): Promise<ApiResult<Session | null>> {
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'magiclink' })
+    if (error) return { data: null, error: { code: 'AUTH_ERROR', message: error.message } }
+    return { data: data.session, error: null }
   } catch (err: unknown) {
     return { data: null, error: { code: 'AUTH_ERROR', message: err instanceof Error ? err.message : 'Unknown error' } }
   }
