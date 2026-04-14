@@ -1,1 +1,5 @@
-﻿{n    "allow": [n    ]n}
+{
+  "permissions": {
+    "allow": []
+  }
+}
