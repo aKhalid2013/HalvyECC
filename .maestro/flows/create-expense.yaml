@@ -1,0 +1,24 @@
+# E2E — create a new expense (requires signed-in user)
+# Run after auth-sign-in flow
+# Add testID props: new-expense-btn, expense-amount-input,
+#   expense-description-input, save-expense-btn
+appId: com.halvy.app
+---
+- tapOn:
+    id: "new-expense-btn"
+- assertVisible:
+    text: "New Expense"
+    timeout: 5000
+- tapOn:
+    id: "expense-amount-input"
+- inputText: "250"
+- tapOn:
+    id: "expense-description-input"
+- inputText: "Test dinner"
+- tapOn:
+    text: "Split equally"
+- tapOn:
+    id: "save-expense-btn"
+- assertVisible:
+    text: "250"
+    timeout: 5000

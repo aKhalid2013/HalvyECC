@@ -1,0 +1,21 @@
+# E2E auth flow — sign in via magic link
+# Run: maestro test .maestro/flows/auth-sign-in.yaml --env TEST_EMAIL=user@test.com
+# Add testID props to your sign-in screen:
+#   <TextInput testID="email-input" />
+#   <Pressable testID="send-magic-link-btn" />
+appId: com.halvy.app
+env:
+  TEST_EMAIL: ${TEST_USER_EMAIL}
+---
+- launchApp
+- assertVisible:
+    text: "Sign in"
+    timeout: 10000
+- tapOn:
+    id: "email-input"
+- inputText: ${TEST_EMAIL}
+- tapOn:
+    id: "send-magic-link-btn"
+- assertVisible:
+    text: "Check your email"
+    timeout: 5000

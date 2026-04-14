@@ -10,9 +10,14 @@ Testing: Jest + React Native Testing Library + Detox (E2E)
 
 ## Commands
 npm run start          # Expo dev server
-npm run test           # Jest
-npm run test:e2e       # Detox E2E
-npm run lint           # ESLint + Prettier
+npm run test           # Jest unit tests
+npm run test:integration  # Jest integration tests (requires supabase start)
+npm run test:web-e2e      # Playwright web E2E
+npm run test:ai-evals     # PromptFoo AI evals
+npm run lint           # Biome lint
+npm run lint:fix       # Biome lint --apply
+npm run format         # Biome format --write
+npm run knip           # Dead code detection
 npm run typecheck      # TypeScript strict
 
 ## Architecture
@@ -74,3 +79,37 @@ Does NOT: chain to the next task automatically
 Tasks inside docs/plans/ are called TASK-1, TASK-2, ... TASK-N.
 The word "Phase" is NEVER used for tasks.
 "Phase" belongs only in docs/phases/ (app release strategy).
+
+## Docs Policy — Context7 MCP
+
+BEFORE using any method from these libraries, fetch the current docs via Context7:
+
+| Library | Context7 slug |
+|---------|---------------|
+| Expo / expo-router | `/expo/expo` |
+| Supabase JS client | `/supabase/supabase-js` |
+| Zustand | `/pmndrs/zustand` |
+| TanStack Query (React Query) | `/tanstack/query` |
+| Zod | `/colinhacks/zod` |
+| NativeWind | `/marklawlor/nativewind` |
+| React Native Reanimated | `/software-mansion/react-native-reanimated` |
+| Dinero.js | `/dinerojs/dinero.js` |
+
+### Usage pattern
+
+```
+// In any planning or implementation step:
+1. Use Context7 MCP resolve-library-id to get the exact library ID
+2. Use Context7 MCP query-docs to fetch relevant section
+3. Implement against the fetched docs — not cached knowledge
+```
+
+Why: These libraries release breaking changes frequently (NativeWind v4 vs v3,
+Expo SDK 54 vs 53, Supabase client v2 vs v1). Fetching live docs prevents
+implementing against deprecated APIs.
+
+### When NOT to fetch
+
+- Internal project files (src/, supabase/, ai-evals/)
+- Stable Node/TypeScript built-ins
+- PromptFoo (use the `ai-evals` skill instead)
