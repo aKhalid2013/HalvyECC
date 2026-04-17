@@ -3,6 +3,7 @@ module.exports = {
   passWithNoTests: true,
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.css$': '<rootDir>/__mocks__/styleMock.js',
   },
   testPathIgnorePatterns: [
     '/node_modules/',

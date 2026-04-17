@@ -403,7 +403,7 @@ Mock `onAuthStateChange`, `getCurrentUser`, and `useAuthStore`:
 ---
 
 ## TASK-7: Root layout, auth gate, QueryProvider, entry redirect, auth route layout
-Status: ⬜ not started
+Status: ✅ done
 Depends on: TASK-5, TASK-6
 Estimated effort: M
 Acceptance Criteria Covered: AC-13, AC-14, AC-15, AC-16
