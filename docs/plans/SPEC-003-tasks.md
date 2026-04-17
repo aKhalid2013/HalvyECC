@@ -289,7 +289,7 @@ Mock `supabase.auth.getUser()` and `supabase.from('users')` via `jest.mock('@/ap
 ---
 
 ## TASK-5: Auth Zustand store
-Status: ⬜ not started
+Status: ✅ done
 Depends on: TASK-3
 Estimated effort: S
 Acceptance Criteria Covered: AC-11
@@ -333,13 +333,13 @@ unauthenticated content.
 4. Run `npx tsc --noEmit` — no errors.
 
 ### Done When
-- [ ] `src/stores/authStore.ts` exports `useAuthStore`
-- [ ] Initial state: `isLoading: true`, all others null/false
-- [ ] `setSession + setUser` → `isAuthenticated: true`
-- [ ] Either null alone → `isAuthenticated: false`
-- [ ] `reset()` → restores `isLoading: true` and all nulls
-- [ ] `npm run test` passes
-- [ ] `npx tsc --noEmit` passes
+- [x] `src/stores/authStore.ts` exports `useAuthStore`
+- [x] Initial state: `isLoading: true`, all others null/false
+- [x] `setSession + setUser` → `isAuthenticated: true`
+- [x] Either null alone → `isAuthenticated: false`
+- [x] `reset()` → restores `isLoading: true` and all nulls
+- [x] `npm run test` passes
+- [x] `npx tsc --noEmit` passes
 
 ### Start command
 /tdd TASK-5 SPEC-003
