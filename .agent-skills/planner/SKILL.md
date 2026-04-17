@@ -41,7 +41,14 @@ Open the spec file. Extract:
 - Schema references (docs/schema/)
 - API references (docs/api/)
 
-### Step 2 — Decompose into Tasks
+### Step 2 — Scan the codebase
+
+Read relevant existing files in `src/` and `app/` to understand:
+- What already exists that this spec builds on
+- What files will be modified vs created fresh
+- Any naming or structural conventions already established
+
+### Step 3 — Decompose into Tasks
 
 Break the spec into the minimum number of independently implementable
 units. Each Task must satisfy ALL of the following rules:
@@ -58,12 +65,18 @@ RULE T4: Own acceptance criteria. Each task lists a subset of the spec's
          acceptance criteria that it satisfies.
 RULE T5: Explicit file list. Each task lists every file it will CREATE
          or MODIFY. No surprises.
+RULE T6: Explicit steps. Each task has a numbered Steps section giving
+         the implementer agent a concrete procedural guide — not just
+         what to build, but how to build it in order.
+RULE T7: Concrete Done When. Each task ends with a Done When checklist
+         of specific verifiable actions (commands to run, queries to
+         check, test assertions to confirm) — not a restatement of ACs.
 
 IMPORTANT NAMING RULE: Tasks are numbered TASK-1, TASK-2, ... TASK-N.
 The word "Phase" is NEVER used for tasks. "Phase" is reserved for the
 app's release phasing in docs/phases/.
 
-### Step 3 — Write the task list file
+### Step 4 — Write the task list file
 
 Save the task list to: docs/plans/SPEC-NNN-tasks.md
 (Replace NNN with the actual spec number.)
@@ -76,17 +89,41 @@ structure:
 Status: ⏳ PENDING APPROVAL
 Spec: docs/specs/[phase-folder]/SPEC-NNN-[slug].md
 
+## Overview
+[2–3 sentences: what this spec builds, what the end state looks like,
+and what the implementer will have when all tasks are done.]
+
+## Prerequisites
+- [ ] [Branch created from correct base, e.g. feat/SPEC-NNN-slug from main]
+- [ ] [Any required prior spec branch merged or dependency verified]
+- [ ] [npm/yarn packages that must be installed before TASK-1]
+- [ ] [External services that must be running, e.g. supabase start]
+- [ ] [Any manual setup steps a human must complete before dev starts]
+
+## Testing Layers
+[Only include layers relevant to this spec. Remove rows that don't apply.]
+
+| Layer | Tool | Command | Runnable from |
+|---|---|---|---|
+| Unit | Jest + RNTL | `npm run test` | Per task (any time) |
+| Integration | supabase test db | `npm run test:integration` | After TASK-N (needs supabase start) |
+| Web E2E | Playwright | `npm run test:web-e2e` | After TASK-N (full UI exists) |
+| Mobile E2E | Maestro | `maestro test` | After TASK-N (full UI exists) |
+
 ## Approval Checklist
 - [ ] Task decomposition is correct
 - [ ] Task order respects dependencies
 - [ ] Scope matches the spec exactly
 - [ ] Each task is self-contained (passes Rule T3)
+- [ ] Each task has Steps and Done When sections
 - [ ] Ready to begin with TASK-1
 
 ---
 
 ## TASK-1: [Short imperative title — verb + noun, max 6 words]
 Status: ⬜ not started
+Estimated effort: S/M/L
+Acceptance Criteria Covered: AC-N, AC-N
 
 ### Context
 [2–4 sentences a fresh agent session needs to understand ONLY this task.
@@ -100,10 +137,25 @@ remembers any other task.]
 - MODIFY: path/to/existing-file.ts
 - CREATE: path/to/__tests__/file.test.tsx
 
-### Acceptance criteria
-[Copy the relevant subset from the spec. Binary pass/fail only.]
-- [ ] [criterion]
-- [ ] [criterion]
+### Testing — [Layer name (e.g. Unit / Integration / E2E)]
+[Describe the specific tests to write for this task: what to mock, what
+assertions to make, what commands to run. Be concrete enough that the
+implementer knows exactly what "tested" means for this task.]
+
+### Steps
+[Numbered implementation steps in order. Concrete enough that an agent
+with no memory of prior sessions knows exactly what to do.]
+1. [First action]
+2. [Second action]
+3. [Continue...]
+
+### Done When
+[Specific verifiable checks — commands to run, queries to execute, test
+counts to confirm. Different from Acceptance Criteria: these are the
+concrete actions that prove the task is actually complete.]
+- [ ] [Specific command exits 0 or returns expected value]
+- [ ] [Specific unit test assertion passes]
+- [ ] [Specific file exists with specific content]
 
 ### Start command
 /tdd TASK-1 SPEC-NNN
@@ -113,6 +165,8 @@ remembers any other task.]
 ## TASK-2: [Short imperative title]
 Status: ⬜ not started
 Depends on: TASK-1
+Estimated effort: S/M/L
+Acceptance Criteria Covered: AC-N, AC-N
 
 ### Context
 [Self-contained context — see Rule T3 above.]
@@ -120,8 +174,15 @@ Depends on: TASK-1
 ### Files
 - CREATE or MODIFY entries
 
-### Acceptance criteria
-- [ ] [criterion]
+### Testing — [Layer name]
+[Specific tests for this task.]
+
+### Steps
+1. [Action]
+2. [Action]
+
+### Done When
+- [ ] [Verification]
 
 ### Start command
 /tdd TASK-2 SPEC-NNN
@@ -129,9 +190,43 @@ Depends on: TASK-1
 ---
 
 [Repeat for all tasks]
+
+---
+
+## Task Dependency Map
+
+```
+TASK-1 ([title])
+  └── TASK-2 ([title])
+        ├── TASK-3 ([title])   ← independent of TASK-4
+        └── TASK-4 ([title])
+              └── TASK-5 ([title]) ← depends on TASK-3 and TASK-4
+```
+
+[Add a note explaining which tasks can run independently if any.]
+
+---
+
+## Post-Completion Verification
+
+After all tasks are marked ✅ done, run this full verification sequence:
+
+```bash
+[command 1]   # what it verifies
+[command 2]
+[command 3]
+```
+
+### AC Coverage
+
+| AC | Task | Verification Method |
+|----|------|---------------------|
+| AC-1 | TASK-N | [how it is verified] |
+| AC-2 | TASK-N | [how it is verified] |
+| AC-N | Runtime | [manual test — describe what to do] |
 ====== END OF FILE TEMPLATE ======
 
-### Step 4 — Print the stop message and HALT
+### Step 5 — Print the stop message and HALT
 
 After writing the file, print EXACTLY this block — nothing after it:
 
