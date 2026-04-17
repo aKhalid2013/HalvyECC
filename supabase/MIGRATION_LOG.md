@@ -47,6 +47,13 @@
 
 ---
 
+## `00004_auth_sync_trigger.sql`
+
+- **Date:** 2026-04-17
+- **Description:** Adds trigger `trg_auth_sync_user` and function `fn_auth_sync_user` on `auth.users` to automatically sync new sign-ups into the `public.users` table, including multi-provider merge logic.
+
+---
+
 ### DOWN Rollback (for revert)
 
 To revert `00001_initial_schema.sql`, execute the following commands in order. These drops are in reverse foreign-key dependency order.
