@@ -230,7 +230,7 @@ Mock `supabase.auth` methods via `jest.mock('@/api/client')`:
 ---
 
 ## TASK-4: Users API module
-Status: ⬜ not started
+Status: ✅ done
 Depends on: TASK-2
 Estimated effort: S
 Acceptance Criteria Covered: AC-8, AC-9, AC-10
@@ -275,13 +275,13 @@ Mock `supabase.auth.getUser()` and `supabase.from('users')` via `jest.mock('@/ap
 4. Run `npx tsc --noEmit` — no errors.
 
 ### Done When
-- [ ] `src/api/users.ts` exports `getUser`, `getCurrentUser`, `updateUser`, `deleteUser`, `reactivateUser`
-- [ ] Unit test: `getCurrentUser()` active → User returned with camelCase fields
-- [ ] Unit test: `getCurrentUser()` deleted → `USER_DEACTIVATED` error
-- [ ] Unit test: `deleteUser()` issues UPDATE with `deleted_at`, not `.delete()`
-- [ ] Unit test: `reactivateUser()` issues UPDATE with `deleted_at: null`
-- [ ] `npm run test` passes
-- [ ] `npx tsc --noEmit` passes
+- [x] `src/api/users.ts` exports `getUser`, `getCurrentUser`, `updateUser`, `deleteUser`, `reactivateUser`
+- [x] Unit test: `getCurrentUser()` active → User returned with camelCase fields
+- [x] Unit test: `getCurrentUser()` deleted → `USER_DEACTIVATED` error
+- [x] Unit test: `deleteUser()` issues UPDATE with `deleted_at`, not `.delete()`
+- [x] Unit test: `reactivateUser()` issues UPDATE with `deleted_at: null`
+- [x] `npm run test` passes
+- [x] `npx tsc --noEmit` passes
 
 ### Start command
 /tdd TASK-4 SPEC-003
