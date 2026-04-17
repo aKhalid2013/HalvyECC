@@ -42,7 +42,7 @@ sign out, and be redirected correctly based on their auth state.
 ---
 
 ## TASK-1: Create auth sync trigger migration
-Status: ⬜ not started
+Status: ✅ done
 Estimated effort: M
 Acceptance Criteria Covered: AC-1, AC-2, AC-3, AC-28
 
@@ -90,14 +90,14 @@ Run after `supabase db reset` confirms all four migrations + seed apply cleanly:
 9. Run `npx tsc --noEmit` to confirm regenerated types compile.
 
 ### Done When
-- [ ] `supabase/migrations/00004_auth_sync_trigger.sql` exists with `fn_auth_sync_user()` and `trg_auth_sync_user`
-- [ ] `supabase db reset` exits 0 (all four migrations + seed)
-- [ ] `SELECT count(*) FROM information_schema.triggers WHERE trigger_name = 'trg_auth_sync_user'` returns 1
-- [ ] SQL test: insert into `auth.users` → correct `public.users` row created
-- [ ] SQL test: duplicate insert → row updated, no constraint error
-- [ ] `supabase/MIGRATION_LOG.md` updated with `00004` entry and DOWN rollback
-- [ ] `src/types/database.ts` regenerated
-- [ ] `npx tsc --noEmit` passes
+- [x] `supabase/migrations/00004_auth_sync_trigger.sql` exists with `fn_auth_sync_user()` and `trg_auth_sync_user`
+- [x] `supabase db reset` exits 0 (all four migrations + seed)
+- [x] `SELECT count(*) FROM information_schema.triggers WHERE trigger_name = 'trg_auth_sync_user'` returns 1
+- [x] SQL test: insert into `auth.users` → correct `public.users` row created
+- [x] SQL test: duplicate insert → row updated, no constraint error
+- [x] `supabase/MIGRATION_LOG.md` updated with `00004` entry and DOWN rollback
+- [x] `src/types/database.ts` regenerated
+- [x] `npx tsc --noEmit` passes
 
 ### Start command
 /tdd TASK-1 SPEC-003
