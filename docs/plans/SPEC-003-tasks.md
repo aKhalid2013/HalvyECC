@@ -105,7 +105,7 @@ Run after `supabase db reset` confirms all four migrations + seed apply cleanly:
 ---
 
 ## TASK-2: Supabase client singleton and toCamel utility
-Status: ⬜ not started
+Status: ✅ done
 Depends on: TASK-1
 Estimated effort: S
 Acceptance Criteria Covered: AC-4, AC-5
@@ -154,13 +154,13 @@ before this task (see Prerequisites).
 7. Run `npx tsc --noEmit` — no errors.
 
 ### Done When
-- [ ] `src/utils/transforms.ts` exports `toCamel()`
-- [ ] `src/api/client.ts` exports `supabase` singleton
-- [ ] Unit test: `Platform.OS='ios'` → SecureStore adapter used
-- [ ] Unit test: `Platform.OS='web'` → storage is undefined
-- [ ] Unit test: `toCamel()` converts and recurses correctly, no mutation
-- [ ] `npm run test` passes
-- [ ] `npx tsc --noEmit` passes
+- [x] `src/utils/transforms.ts` exports `toCamel()`
+- [x] `src/api/client.ts` exports `supabase` singleton
+- [x] Unit test: `Platform.OS='ios'` → SecureStore adapter used
+- [x] Unit test: `Platform.OS='web'` → storage is undefined
+- [x] Unit test: `toCamel()` converts and recurses correctly, no mutation
+- [x] `npm run test` passes
+- [x] `npx tsc --noEmit` passes
 
 ### Start command
 /tdd TASK-2 SPEC-003
