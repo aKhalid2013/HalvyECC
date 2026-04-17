@@ -475,7 +475,7 @@ Auth gate (mock `useAuthStore`):
 ---
 
 ## TASK-8: Auth screens, authenticated home, and E2E flows
-Status: ⬜ not started
+Status: ✅ done
 Depends on: TASK-3, TASK-5, TASK-7
 Estimated effort: L
 Acceptance Criteria Covered: AC-17, AC-19, AC-21, AC-24, AC-25, AC-26

@@ -1,0 +1,7 @@
+appId: com.halvy.app
+---
+- launchApp
+# This test assumes we are already signed in or using a mock auth session
+- assertVisible: "Welcome, .*"
+- tapOn: "Sign Out"
+- assertVisible: "Continue with Google"

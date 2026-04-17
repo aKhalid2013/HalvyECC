@@ -1,0 +1,15 @@
+appId: com.halvy.app
+---
+- launchApp
+- tapOn: "Sign in with Magic Link"
+- assertVisible: "Sign in with email"
+- tapOn:
+    id: "email-input"
+- inputText: "test@example.com"
+- tapOn:
+    id: "send-magic-link-btn"
+- assertVisible: "Check your email"
+- assertVisible: "test@example.com"
+- assertVisible: "Resend in 60s"
+- tapOn: "Back to sign-in"
+- assertVisible: "Continue with Google"

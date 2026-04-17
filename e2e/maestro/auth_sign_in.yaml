@@ -1,0 +1,8 @@
+appId: com.halvy.app
+---
+- launchApp
+- assertVisible: "Halvy"
+- assertVisible: "Continue with Google"
+- assertVisible: "Continue with Apple"
+- assertVisible: "Sign in with Magic Link"
+- assertVisible: "(Coming soon)"
