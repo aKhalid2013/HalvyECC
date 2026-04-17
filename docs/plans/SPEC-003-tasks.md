@@ -347,7 +347,7 @@ unauthenticated content.
 ---
 
 ## TASK-6: AuthProvider
-Status: ⬜ not started
+Status: ✅ done
 Depends on: TASK-3, TASK-4, TASK-5
 Estimated effort: M
 Acceptance Criteria Covered: AC-12
@@ -388,14 +388,14 @@ Mock `onAuthStateChange`, `getCurrentUser`, and `useAuthStore`:
 4. Run `npx tsc --noEmit` — no errors.
 
 ### Done When
-- [ ] `src/providers/AuthProvider.tsx` exists
-- [ ] Unit test: session received → `setSession`, `setUser`, `setLoading(false)` called
-- [ ] Unit test: `USER_DEACTIVATED` → `setError` called, `setUser` not called
-- [ ] Unit test: session null → `reset()` called
-- [ ] Unit test: `isLoading: true` → children not rendered
-- [ ] Unit test: unmount → unsubscribe called
-- [ ] `npm run test` passes
-- [ ] `npx tsc --noEmit` passes
+- [x] `src/providers/AuthProvider.tsx` exists
+- [x] Unit test: session received → `setSession`, `setUser`, `setLoading(false)` called
+- [x] Unit test: `USER_DEACTIVATED` → `setError` called, `setUser` not called
+- [x] Unit test: session null → `reset()` called
+- [x] Unit test: `isLoading: true` → children not rendered
+- [x] Unit test: unmount → unsubscribe called
+- [x] `npm run test` passes
+- [x] `npx tsc --noEmit` passes
 
 ### Start command
 /tdd TASK-6 SPEC-003
