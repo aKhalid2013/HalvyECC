@@ -168,7 +168,7 @@ before this task (see Prerequisites).
 ---
 
 ## TASK-3: Auth API module
-Status: ⬜ not started
+Status: ✅ done
 Depends on: TASK-2
 Estimated effort: S
 Acceptance Criteria Covered: AC-6, AC-7
@@ -215,14 +215,14 @@ Mock `supabase.auth` methods via `jest.mock('@/api/client')`:
 5. Run `npx tsc --noEmit` — no errors.
 
 ### Done When
-- [ ] `src/api/auth.ts` exports `signIn`, `signOut`, `signOutAllDevices`, `getSession`, `onAuthStateChange`
-- [ ] `ApiResult<T>`, `ApiError`, `Unsubscribe` types defined and importable
-- [ ] Unit test: `signIn('apple')` returns `AUTH_PROVIDER_UNAVAILABLE`, no Supabase call made
-- [ ] Unit test: `signIn('google')` delegates to `signInWithOAuth`
-- [ ] Unit test: `signIn('magic_link', email)` delegates to `signInWithOtp`
-- [ ] Unit test: `signOutAllDevices()` calls `signOut({ scope: 'global' })`
-- [ ] `npm run test` passes
-- [ ] `npx tsc --noEmit` passes
+- [x] `src/api/auth.ts` exports `signIn`, `signOut`, `signOutAllDevices`, `getSession`, `onAuthStateChange`
+- [x] `ApiResult<T>`, `ApiError`, `Unsubscribe` types defined and importable
+- [x] Unit test: `signIn('apple')` returns `AUTH_PROVIDER_UNAVAILABLE`, no Supabase call made
+- [x] Unit test: `signIn('google')` delegates to `signInWithOAuth`
+- [x] Unit test: `signIn('magic_link', email)` delegates to `signInWithOtp`
+- [x] Unit test: `signOutAllDevices()` calls `signOut({ scope: 'global' })`
+- [x] `npm run test` passes
+- [x] `npx tsc --noEmit` passes
 
 ### Start command
 /tdd TASK-3 SPEC-003
