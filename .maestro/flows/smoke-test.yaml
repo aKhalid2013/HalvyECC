@@ -1,0 +1,9 @@
+# Smoke test — verifies the app launches and reaches the sign-in screen
+# Run: maestro test .maestro/flows/smoke-test.yaml
+# Requires a built binary (eas build --profile e2e)
+appId: com.halvy.app
+---
+- launchApp
+- assertVisible:
+    text: "Sign in"
+    timeout: 10000

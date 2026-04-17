@@ -1,0 +1,10 @@
+PLACEHOLDER — This prompt will be written as part of the AI receipt parsing spec.
+
+The production prompt will instruct Gemini to extract from a receipt image:
+- total_cents (integer — total amount in smallest currency unit)
+- currency (3-letter ISO 4217 code, e.g. "EGP")
+- merchant (string, optional)
+- date (ISO datetime string, optional)
+- items (array of { description, amount_cents, quantity })
+
+Do not use this file until the AI parsing spec (SPEC-NNN) is approved.

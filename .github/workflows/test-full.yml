@@ -1,0 +1,334 @@
+name: Full Test Suite
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 1: Unit + Integration tests
+  # ─────────────────────────────────────────────────────────────────────────
+  unit-and-integration:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      supabase:
+        image: supabase/supabase-local-dev:latest
+        ports:
+          - 54321:54321
+          - 54322:54322
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests (with coverage)
+        run: npm test -- --coverage --ci --passWithNoTests
+        env:
+          CI: true
+
+      - name: Wait for Supabase
+        run: |
+          timeout 30 bash -c 'until curl -sf http://localhost:54321/rest/v1/ > /dev/null; do sleep 1; done'
+        continue-on-error: true
+
+      - name: Apply database migrations
+        run: npx supabase db reset --local
+        continue-on-error: true
+
+      - name: Integration tests
+        run: npm run test:integration
+        env:
+          CI: true
+          EXPO_PUBLIC_SUPABASE_URL: http://localhost:54321
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_LOCAL_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_LOCAL_SERVICE_ROLE_KEY }}
+        continue-on-error: true
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 2: Playwright web E2E
+  # ─────────────────────────────────────────────────────────────────────────
+  web-e2e:
+    name: Web E2E (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: unit-and-integration
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Build web app
+        run: npx expo export --platform web
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Run Playwright tests
+        run: npm run test:web-e2e
+        env:
+          CI: true
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload Playwright traces
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 3: Maestro mobile E2E — iOS
+  # ─────────────────────────────────────────────────────────────────────────
+  mobile-e2e-ios:
+    name: Mobile E2E — iOS (Maestro)
+    runs-on: macos-14
+    timeout-minutes: 60
+    needs: unit-and-integration
+    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'run-e2e')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install Maestro
+        run: |
+          export MAESTRO_VERSION=1.39.0
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Build iOS app (EAS local)
+        run: npx eas build --platform ios --profile e2e --local --output app.tar.gz
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Extract and install .app
+        run: |
+          tar -xzf app.tar.gz
+          xcrun simctl boot "iPhone 15"
+          xcrun simctl install booted *.app
+
+      - name: Run Maestro flows
+        run: |
+          maestro test .maestro/flows/smoke-test.yaml
+          maestro test .maestro/flows/auth-sign-in.yaml
+          maestro test .maestro/flows/create-expense.yaml
+        env:
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: 30000
+
+      - name: Upload Maestro screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: maestro-ios-screenshots
+          path: ~/.maestro/tests/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 4: Maestro mobile E2E — Android
+  # ─────────────────────────────────────────────────────────────────────────
+  mobile-e2e-android:
+    name: Mobile E2E — Android (Maestro)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: unit-and-integration
+    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'run-e2e')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Enable KVM (Android emulator)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Setup Android SDK + emulator
+        uses: android-actions/setup-android@v3
+
+      - name: Install Maestro
+        run: |
+          export MAESTRO_VERSION=1.39.0
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "${HOME}/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Build Android APK (EAS local)
+        run: npx eas build --platform android --profile e2e --local --output app.apk
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Start Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          profile: pixel_6
+          script: |
+            adb install app.apk
+            maestro test .maestro/flows/smoke-test.yaml
+            maestro test .maestro/flows/auth-sign-in.yaml
+            maestro test .maestro/flows/create-expense.yaml
+        env:
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+
+      - name: Upload Maestro screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: maestro-android-screenshots
+          path: ~/.maestro/tests/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Job 5: AI Evals (PromptFoo) — only on AI-related changes
+  # ─────────────────────────────────────────────────────────────────────────
+  ai-evals:
+    name: AI Evals (PromptFoo)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: unit-and-integration
+    if: |
+      contains(github.event.pull_request.files.*.filename, 'ai-evals/') ||
+      contains(github.event.pull_request.files.*.filename, 'src/features/ai/') ||
+      contains(github.event.pull_request.files.*.filename, 'supabase/functions/ai-proxy/')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run AI evals
+        run: npm run test:ai-evals
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PROMPTFOO_CACHE_PATH: /tmp/promptfoo-cache
+
+      - name: Upload eval results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-eval-results
+          path: /tmp/promptfoo-cache/
+          retention-days: 14
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Summary gate — blocks merge if critical jobs fail
+  # ─────────────────────────────────────────────────────────────────────────
+  all-checks-pass:
+    name: All Checks Pass
+    runs-on: ubuntu-latest
+    needs: [unit-and-integration, web-e2e]
+    if: always()
+    steps:
+      - name: Check required job results
+        run: |
+          if [ "${{ needs.unit-and-integration.result }}" != "success" ]; then
+            echo "unit-and-integration failed"
+            exit 1
+          fi
+          if [ "${{ needs.web-e2e.result }}" != "success" ]; then
+            echo "web-e2e failed"
+            exit 1
+          fi
+          echo "All required checks passed"

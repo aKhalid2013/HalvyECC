@@ -18,3 +18,5 @@ npm-debug.*
 *.p12
 *.key
 *.mobileprovision
+e2e/.auth/
+.env.test

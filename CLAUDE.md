@@ -42,6 +42,23 @@ Each teammate works on its own branch: feat/SPEC-{NNN}-slug
 - expo-mobile — Expo/React Native quick-reference patterns
 - mobile-e2e — Detox + Maestro E2E testing for mobile flows
 
+### State & Data Skills
+- zustand-patterns — Store creation, slices, persistence, auth sign-out reset
+- react-query-patterns — TanStack Query v5, query-key-factory, optimistic updates, Supabase invalidation
+- zod-patterns — Runtime validation at all external boundaries (Supabase, Gemini, forms)
+- monetary-patterns — Dinero.js v2, integer cents, equal split, display formatting
+
+### Styling Skills
+- nativewind-patterns — NativeWind v4 className usage, dark mode, design tokens, forbidden patterns
+
+### Testing Skills
+- supabase-integration-testing — RLS policy tests against local Supabase instance
+- playwright-web-e2e — Playwright E2E for Expo web, Page Object Model, multi-browser
+- maestro-flows — Maestro YAML flows for iOS/Android, CI with EAS
+- universal-e2e — One test suite for iOS + Android (Detox) + Web (Playwright)
+- storybook-rn — Per-component stories as definition-of-done, Chromatic CI integration
+- ai-evals — PromptFoo evals for Gemini receipt parser and voice dictation
+
 ### From ECC (general-purpose)
 - postgres-patterns — Supabase/PostgreSQL query optimization, indexes, RLS
 - api-design — REST conventions, pagination, error envelopes
@@ -62,6 +79,7 @@ Configured in `~/.claude/settings.json` under `mcpServers`:
 - **supabase** — Query schema, RLS policies, run SQL directly. Replace `YOUR_SUPABASE_PROJECT_REF` with your project ref before using.
 - **memory** — Persist facts across sessions (approved specs, phase state, architectural decisions)
 - **sequential-thinking** — Chain-of-thought reasoning for complex planning tasks
+- **context7** — Fetch live library docs (Expo, Supabase, Zustand, TanStack Query, Zod, NativeWind). See Docs Policy in AGENTS.md. Requires API key from context7.com/dashboard.
 
 ## Slash Command Boundaries (enforced)
 

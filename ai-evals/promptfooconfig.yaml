@@ -1,0 +1,40 @@
+# PromptFoo evaluation config for Halvy's Gemini receipt parser
+# Run: npm run test:ai-evals
+# Full docs: https://promptfoo.dev/docs/getting-started
+
+description: "Halvy receipt parser — Gemini eval suite"
+
+prompts:
+  # Update path when AI parsing feature is implemented
+  - file://ai-evals/prompts/receipt-extract.txt
+
+providers:
+  - id: google:gemini-2.0-flash
+    config:
+      temperature: 0.1
+      # Uses GOOGLE_API_KEY or GEMINI_API_KEY env var automatically
+
+defaultTest:
+  assert:
+    - type: is-json
+      description: "Response must be valid JSON"
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          typeof result.total_cents === 'number' &&
+          result.total_cents > 0 &&
+          typeof result.currency === 'string' &&
+          result.currency.length === 3 &&
+          Array.isArray(result.items)
+        );
+      description: "Response must have total_cents (int), currency (3-char ISO), items (array)"
+
+tests:
+  # Add real fixture images once AI parsing SPEC is written
+  - description: "Placeholder — add real fixtures when AI parsing spec is approved"
+    vars:
+      receipt_image: "PLACEHOLDER"
+    assert:
+      - type: javascript
+        value: "return true;"
