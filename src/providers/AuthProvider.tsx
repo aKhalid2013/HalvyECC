@@ -1,3 +1,4 @@
+import type { Session } from '@supabase/supabase-js';
 import type React from 'react';
 import { useEffect } from 'react';
 import { onAuthStateChange } from '../api/auth';
@@ -13,7 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const reset = useAuthStore((state) => state.reset);
 
   useEffect(() => {
-    const handleAuthChange = async (session: any) => {
+    const handleAuthChange = async (session: Session | null) => {
       if (session !== null) {
         const { data: user, error } = await getCurrentUser();
         if (error) {

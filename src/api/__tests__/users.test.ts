@@ -1,6 +1,6 @@
-import { getCurrentUser, getUser, updateUser, deleteUser, reactivateUser } from '../users';
-import { supabase } from '../client';
 import { toCamel } from '../../utils/transforms';
+import { supabase } from '../client';
+import { deleteUser, getCurrentUser, getUser, reactivateUser, updateUser } from '../users';
 
 const mockSingle = jest.fn();
 const mockSelectAfterEq = jest.fn(() => ({ single: mockSingle }));
@@ -41,7 +41,7 @@ describe('Users API module', () => {
       });
 
       const result = await getCurrentUser();
-      
+
       expect(supabase.auth.getUser).toHaveBeenCalled();
       expect(supabase.from).toHaveBeenCalledWith('users');
       expect(mockSelect).toHaveBeenCalledWith('*');
@@ -62,23 +62,28 @@ describe('Users API module', () => {
       });
 
       const result = await getCurrentUser();
-      
+
       expect(result.data).toBeNull();
-      expect(result.error).toEqual({ code: 'USER_DEACTIVATED', message: 'User account is deactivated' });
+      expect(result.error).toEqual({
+        code: 'USER_DEACTIVATED',
+        message: 'User account is deactivated',
+      });
       expect(toCamel).not.toHaveBeenCalled();
     });
   });
 
   describe('deleteUser', () => {
     it('issues UPDATE with deleted_at, not .delete()', async () => {
-      mockEq.mockReturnValueOnce(Promise.resolve({ error: null }) as any);
+      (mockEq as jest.Mock).mockResolvedValueOnce({ error: null });
 
       const result = await deleteUser('user-3');
-      
+
       expect(supabase.from).toHaveBeenCalledWith('users');
-      expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({
-        deleted_at: expect.any(String),
-      }));
+      expect(mockUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          deleted_at: expect.any(String),
+        })
+      );
       expect(mockEq).toHaveBeenCalledWith('id', 'user-3');
       expect(result.error).toBeNull();
     });
@@ -92,7 +97,7 @@ describe('Users API module', () => {
       });
 
       const result = await reactivateUser('user-4');
-      
+
       expect(supabase.from).toHaveBeenCalledWith('users');
       expect(mockUpdate).toHaveBeenCalledWith({ deleted_at: null });
       expect(mockEq).toHaveBeenCalledWith('id', 'user-4');
@@ -110,7 +115,7 @@ describe('Users API module', () => {
       });
 
       const result = await updateUser('user-5', { displayName: 'X', avatarUrl: 'http://img' });
-      
+
       expect(supabase.from).toHaveBeenCalledWith('users');
       expect(mockUpdate).toHaveBeenCalledWith({
         display_name: 'X',
@@ -130,7 +135,7 @@ describe('Users API module', () => {
       });
 
       const result = await getUser('user-6');
-      
+
       expect(supabase.from).toHaveBeenCalledWith('users');
       expect(mockSelect).toHaveBeenCalledWith('*');
       expect(mockEq).toHaveBeenCalledWith('id', 'user-6');

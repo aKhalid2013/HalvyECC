@@ -1,5 +1,5 @@
+import type { Session } from '@supabase/supabase-js';
 import { act, render } from '@testing-library/react-native';
-import React from 'react';
 import { Text } from 'react-native';
 import { onAuthStateChange } from '../../api/auth';
 import { getCurrentUser } from '../../api/users';
@@ -48,7 +48,7 @@ describe('AuthProvider', () => {
     setupStoreMock(false);
     (getCurrentUser as jest.Mock).mockResolvedValue({ data: { id: 'u1' }, error: null });
 
-    let callback: any;
+    let callback: (session: Session | null) => Promise<void>;
     (onAuthStateChange as jest.Mock).mockImplementation((cb) => {
       callback = cb;
       return mockUnsubscribe;
@@ -66,7 +66,7 @@ describe('AuthProvider', () => {
     );
 
     await act(async () => {
-      await callback({ access_token: '123' });
+      await callback({ access_token: '123' } as unknown as Session);
     });
 
     expect(getCurrentUser).toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe('AuthProvider', () => {
       error: { code: 'USER_DEACTIVATED' },
     });
 
-    let callback: any;
+    let callback: (session: Session | null) => Promise<void>;
     (onAuthStateChange as jest.Mock).mockImplementation((cb) => {
       callback = cb;
       return mockUnsubscribe;
@@ -96,7 +96,7 @@ describe('AuthProvider', () => {
     );
 
     await act(async () => {
-      await callback({ access_token: '123' });
+      await callback({ access_token: '123' } as unknown as Session);
     });
 
     expect(mockSetError).toHaveBeenCalledWith({ code: 'USER_DEACTIVATED' });
@@ -106,7 +106,7 @@ describe('AuthProvider', () => {
 
   it('session null -> reset() called then setLoading(false)', async () => {
     setupStoreMock(false);
-    let callback: any;
+    let callback: (session: Session | null) => Promise<void>;
     (onAuthStateChange as jest.Mock).mockImplementation((cb) => {
       callback = cb;
       return mockUnsubscribe;

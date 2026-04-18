@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { signIn } from '../../src/api/auth';
 
 export default function MagicLinkScreen() {
@@ -39,7 +39,7 @@ export default function MagicLinkScreen() {
           We sent a sign-in link to <Text className="font-semibold">{email}</Text>
         </Text>
 
-        <Pressable 
+        <Pressable
           disabled={resendCountdown > 0}
           onPress={handleSendLink}
           className={`w-full py-4 rounded-xl items-center mb-4 ${resendCountdown > 0 ? 'bg-gray-200' : 'bg-indigo-500'}`}
@@ -73,7 +73,7 @@ export default function MagicLinkScreen() {
 
       {error && <Text className="text-red-500 text-sm mb-4">{error}</Text>}
 
-      <Pressable 
+      <Pressable
         onPress={handleSendLink}
         disabled={!isValidEmail(email)}
         accessibilityState={{ disabled: !isValidEmail(email) }}

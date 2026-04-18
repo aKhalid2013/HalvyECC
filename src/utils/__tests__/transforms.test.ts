@@ -13,14 +13,14 @@ describe('transforms', () => {
         user_profile: {
           first_name: 'John',
           last_name: 'Doe',
-        }
+        },
       };
       const output = toCamel(input);
       expect(output).toEqual({
         userProfile: {
           firstName: 'John',
           lastName: 'Doe',
-        }
+        },
       });
     });
 
@@ -32,9 +32,9 @@ describe('transforms', () => {
 
     it('passes arrays through without snake_case conversion on elements', () => {
       const input = {
-        items_list: ['first_item', 'second_item', { nested_key: 'value' }]
+        items_list: ['first_item', 'second_item', { nested_key: 'value' }],
       };
-      const output = toCamel(input) as any;
+      const output = toCamel(input) as Record<string, unknown[]>;
       expect(output.itemsList[0]).toBe('first_item');
       expect(output.itemsList[1]).toBe('second_item');
       expect(output.itemsList[2]).toEqual({ nestedKey: 'value' });
@@ -50,7 +50,7 @@ describe('transforms', () => {
       const input = {
         created_at: date,
       };
-      const output = toCamel(input) as any;
+      const output = toCamel(input) as Record<string, unknown>;
       expect(output.createdAt).toBe(date);
     });
   });

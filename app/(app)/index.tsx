@@ -1,15 +1,16 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from '../../src/stores/authStore';
+import { Pressable, Text, View } from 'react-native';
 import { signOut } from '../../src/api/auth';
+import { useAuthStore } from '../../src/stores/authStore';
 
 export default function HomeScreen() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
+  const reset = useAuthStore((state) => state.reset);
 
   const handleSignOut = async () => {
     await signOut();
+    reset();
     router.replace('/(auth)/sign-in');
   };
 
@@ -18,7 +19,7 @@ export default function HomeScreen() {
       <Text className="text-2xl font-bold text-indigo-500 mb-2">Welcome, {user?.displayName}</Text>
       <Text className="text-sm text-gray-500 mb-8">{user?.email}</Text>
 
-      <Pressable 
+      <Pressable
         onPress={handleSignOut}
         className="bg-white border border-red-500 py-3 px-8 rounded-xl"
       >

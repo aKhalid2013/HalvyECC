@@ -1,11 +1,15 @@
-import { supabase } from './client';
+import type { ApiResult } from '../types/api';
+import type { User } from '../types/models';
 import { toCamel } from '../utils/transforms';
-import { User } from '../types/models';
-import { ApiResult } from '../types/api';
+import { supabase } from './client';
 
 export interface UpdateUserPayload {
   displayName?: string;
   avatarUrl?: string | null;
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : 'Unknown error';
 }
 
 export async function getCurrentUser(): Promise<ApiResult<User>> {
@@ -22,33 +26,35 @@ export async function getCurrentUser(): Promise<ApiResult<User>> {
 
     if (error) throw error;
     if (data.deleted_at !== null) {
-      return { data: null, error: { code: 'USER_DEACTIVATED', message: 'User account is deactivated' } };
+      return {
+        data: null,
+        error: { code: 'USER_DEACTIVATED', message: 'User account is deactivated' },
+      };
     }
 
     return { data: toCamel<User>(data), error: null };
-  } catch (err: any) {
-    return { data: null, error: { code: 'UNKNOWN', message: err.message } };
+  } catch (err: unknown) {
+    return { data: null, error: { code: 'UNKNOWN', message: errorMessage(err) } };
   }
 }
 
 export async function getUser(userId: string): Promise<ApiResult<User>> {
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    const { data, error } = await supabase.from('users').select('*').eq('id', userId).single();
 
     if (error) throw error;
     return { data: toCamel<User>(data), error: null };
-  } catch (err: any) {
-    return { data: null, error: { code: 'UNKNOWN', message: err.message } };
+  } catch (err: unknown) {
+    return { data: null, error: { code: 'UNKNOWN', message: errorMessage(err) } };
   }
 }
 
-export async function updateUser(userId: string, payload: UpdateUserPayload): Promise<ApiResult<User>> {
+export async function updateUser(
+  userId: string,
+  payload: UpdateUserPayload
+): Promise<ApiResult<User>> {
   try {
-    const snakePayload: any = {};
+    const snakePayload: { display_name?: string; avatar_url?: string | null } = {};
     if (payload.displayName !== undefined) snakePayload.display_name = payload.displayName;
     if (payload.avatarUrl !== undefined) snakePayload.avatar_url = payload.avatarUrl;
 
@@ -61,8 +67,8 @@ export async function updateUser(userId: string, payload: UpdateUserPayload): Pr
 
     if (error) throw error;
     return { data: toCamel<User>(data), error: null };
-  } catch (err: any) {
-    return { data: null, error: { code: 'UNKNOWN', message: err.message } };
+  } catch (err: unknown) {
+    return { data: null, error: { code: 'UNKNOWN', message: errorMessage(err) } };
   }
 }
 
@@ -75,8 +81,8 @@ export async function deleteUser(userId: string): Promise<ApiResult<void>> {
 
     if (error) throw error;
     return { data: null, error: null };
-  } catch (err: any) {
-    return { data: null, error: { code: 'UNKNOWN', message: err.message } };
+  } catch (err: unknown) {
+    return { data: null, error: { code: 'UNKNOWN', message: errorMessage(err) } };
   }
 }
 
@@ -91,7 +97,7 @@ export async function reactivateUser(userId: string): Promise<ApiResult<User>> {
 
     if (error) throw error;
     return { data: toCamel<User>(data), error: null };
-  } catch (err: any) {
-    return { data: null, error: { code: 'UNKNOWN', message: err.message } };
+  } catch (err: unknown) {
+    return { data: null, error: { code: 'UNKNOWN', message: errorMessage(err) } };
   }
 }
