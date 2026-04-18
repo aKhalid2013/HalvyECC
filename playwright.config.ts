@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config as dotenvConfig } from 'dotenv';
+
+// Load test environment (local Supabase credentials, TEST_USER_EMAIL)
+dotenvConfig({ path: '.env.test' });
 
 export default defineConfig({
   testDir: './e2e/web',
@@ -20,6 +24,12 @@ export default defineConfig({
     {
       name: 'setup',
       testMatch: /.*\.setup\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'setup-safari',
+      testMatch: /.*\.setup\.ts/,
+      use: { ...devices['Desktop Safari'] },
     },
     {
       name: 'Desktop Chrome',
@@ -28,8 +38,11 @@ export default defineConfig({
     },
     {
       name: 'Desktop Safari',
-      use: { ...devices['Desktop Safari'] },
-      dependencies: ['setup'],
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: 'e2e/.auth/user-safari.json',
+      },
+      dependencies: ['setup-safari'],
     },
     {
       name: 'Mobile Chrome (Pixel 7)',
@@ -38,8 +51,11 @@ export default defineConfig({
     },
     {
       name: 'Mobile Safari (iPhone 14)',
-      use: { ...devices['iPhone 14'] },
-      dependencies: ['setup'],
+      use: {
+        ...devices['iPhone 14'],
+        storageState: 'e2e/.auth/user-safari.json',
+      },
+      dependencies: ['setup-safari'],
     },
   ],
   webServer: {

@@ -1,4 +1,6 @@
 import { Session } from '@supabase/supabase-js';
+import { makeRedirectUri } from 'expo-auth-session';
+import { Platform } from 'react-native';
 import { ApiResult, Unsubscribe } from '../types/api';
 import { supabase } from './client';
 
@@ -12,7 +14,13 @@ export async function signIn(provider: 'google' | 'apple' | 'magic_link', email?
     }
 
     if (provider === 'google') {
-      const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+      const redirectTo = Platform.OS !== 'web'
+        ? makeRedirectUri({ scheme: 'halvy' })
+        : undefined;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo },
+      });
       if (error) throw error;
       return { data: data as any, error: null };
     }

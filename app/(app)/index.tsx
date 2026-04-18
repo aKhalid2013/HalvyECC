@@ -7,11 +7,9 @@ import { signOut } from '../../src/api/auth';
 export default function HomeScreen() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const reset = useAuthStore((state) => state.reset);
 
   const handleSignOut = async () => {
     await signOut();
-    reset();
     router.replace('/(auth)/sign-in');
   };
 

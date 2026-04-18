@@ -1,10 +1,10 @@
+import { act, render } from '@testing-library/react-native';
 import React from 'react';
-import { render, act } from '@testing-library/react-native';
 import { Text } from 'react-native';
-import { AuthProvider } from '../AuthProvider';
 import { onAuthStateChange } from '../../api/auth';
 import { getCurrentUser } from '../../api/users';
 import { useAuthStore } from '../../stores/authStore';
+import { AuthProvider } from '../AuthProvider';
 
 jest.mock('../../api/auth', () => ({
   onAuthStateChange: jest.fn(),
@@ -47,7 +47,7 @@ describe('AuthProvider', () => {
   it('session received -> setSession, setUser, setLoading(false) called', async () => {
     setupStoreMock(false);
     (getCurrentUser as jest.Mock).mockResolvedValue({ data: { id: 'u1' }, error: null });
-    
+
     let callback: any;
     (onAuthStateChange as jest.Mock).mockImplementation((cb) => {
       callback = cb;
@@ -59,8 +59,12 @@ describe('AuthProvider', () => {
     mockSetUser.mockImplementation(() => callOrder.push('setUser'));
     mockSetLoading.mockImplementation(() => callOrder.push('setLoading'));
 
-    render(<AuthProvider><Text>child</Text></AuthProvider>);
-    
+    render(
+      <AuthProvider>
+        <Text>child</Text>
+      </AuthProvider>
+    );
+
     await act(async () => {
       await callback({ access_token: '123' });
     });
@@ -74,19 +78,23 @@ describe('AuthProvider', () => {
 
   it('USER_DEACTIVATED -> setError called, setUser not called', async () => {
     setupStoreMock(false);
-    (getCurrentUser as jest.Mock).mockResolvedValue({ 
-      data: null, 
-      error: { code: 'USER_DEACTIVATED' } 
+    (getCurrentUser as jest.Mock).mockResolvedValue({
+      data: null,
+      error: { code: 'USER_DEACTIVATED' },
     });
-    
+
     let callback: any;
     (onAuthStateChange as jest.Mock).mockImplementation((cb) => {
       callback = cb;
       return mockUnsubscribe;
     });
 
-    render(<AuthProvider><Text>child</Text></AuthProvider>);
-    
+    render(
+      <AuthProvider>
+        <Text>child</Text>
+      </AuthProvider>
+    );
+
     await act(async () => {
       await callback({ access_token: '123' });
     });
@@ -96,7 +104,7 @@ describe('AuthProvider', () => {
     expect(mockSetLoading).toHaveBeenCalledWith(false);
   });
 
-  it('session null -> reset() called', async () => {
+  it('session null -> reset() called then setLoading(false)', async () => {
     setupStoreMock(false);
     let callback: any;
     (onAuthStateChange as jest.Mock).mockImplementation((cb) => {
@@ -104,28 +112,46 @@ describe('AuthProvider', () => {
       return mockUnsubscribe;
     });
 
-    render(<AuthProvider><Text>child</Text></AuthProvider>);
-    
+    const callOrder: string[] = [];
+    mockReset.mockImplementation(() => callOrder.push('reset'));
+    mockSetLoading.mockImplementation(() => callOrder.push('setLoading'));
+
+    render(
+      <AuthProvider>
+        <Text>child</Text>
+      </AuthProvider>
+    );
+
     await act(async () => {
       await callback(null);
     });
 
     expect(mockReset).toHaveBeenCalled();
+    expect(mockSetLoading).toHaveBeenCalledWith(false);
+    expect(callOrder).toEqual(['reset', 'setLoading']);
   });
 
   it('isLoading: true -> children not rendered', () => {
     setupStoreMock(true);
     (onAuthStateChange as jest.Mock).mockReturnValue(mockUnsubscribe);
 
-    const { queryByText } = render(<AuthProvider><Text>child</Text></AuthProvider>);
+    const { queryByText } = render(
+      <AuthProvider>
+        <Text>child</Text>
+      </AuthProvider>
+    );
     expect(queryByText('child')).toBeNull();
   });
-  
+
   it('isLoading: false -> children rendered', () => {
     setupStoreMock(false);
     (onAuthStateChange as jest.Mock).mockReturnValue(mockUnsubscribe);
 
-    const { queryByText } = render(<AuthProvider><Text>child</Text></AuthProvider>);
+    const { queryByText } = render(
+      <AuthProvider>
+        <Text>child</Text>
+      </AuthProvider>
+    );
     expect(queryByText('child')).not.toBeNull();
   });
 
@@ -133,9 +159,13 @@ describe('AuthProvider', () => {
     setupStoreMock(false);
     (onAuthStateChange as jest.Mock).mockReturnValue(mockUnsubscribe);
 
-    const { unmount } = render(<AuthProvider><Text>child</Text></AuthProvider>);
+    const { unmount } = render(
+      <AuthProvider>
+        <Text>child</Text>
+      </AuthProvider>
+    );
     expect(mockUnsubscribe).not.toHaveBeenCalled();
-    
+
     unmount();
     expect(mockUnsubscribe).toHaveBeenCalled();
   });

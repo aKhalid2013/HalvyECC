@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { onAuthStateChange } from '../api/auth';
 import { getCurrentUser } from '../api/users';
 import { useAuthStore } from '../stores/authStore';
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         reset();
+        setLoading(false);
       }
     };
 

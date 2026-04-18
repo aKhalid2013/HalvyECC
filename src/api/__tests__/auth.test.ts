@@ -1,5 +1,13 @@
-import { signIn, signOut, signOutAllDevices, getSession, onAuthStateChange } from '../auth';
+import { getSession, onAuthStateChange, signIn, signOut, signOutAllDevices } from '../auth';
 import { supabase } from '../client';
+
+jest.mock('expo-auth-session', () => ({
+  makeRedirectUri: jest.fn(() => 'halvy://auth/callback'),
+}));
+
+jest.mock('react-native', () => ({
+  Platform: { OS: 'ios' },
+}));
 
 jest.mock('../client', () => ({
   supabase: {
@@ -19,10 +27,13 @@ describe('Auth API module', () => {
   });
 
   describe('signIn', () => {
-    it('delegates google to signInWithOAuth', async () => {
+    it('delegates google to signInWithOAuth with native redirectTo', async () => {
       (supabase.auth.signInWithOAuth as jest.Mock).mockResolvedValue({ data: {}, error: null });
       await signIn('google');
-      expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith({ provider: 'google' });
+      expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+        provider: 'google',
+        options: { redirectTo: 'halvy://auth/callback' },
+      });
     });
 
     it('delegates magic_link to signInWithOtp', async () => {
@@ -35,7 +46,7 @@ describe('Auth API module', () => {
       const result = await signIn('apple');
       expect(result).toEqual({
         data: null,
-        error: { code: 'AUTH_PROVIDER_UNAVAILABLE', message: 'Apple sign-in coming soon' }
+        error: { code: 'AUTH_PROVIDER_UNAVAILABLE', message: 'Apple sign-in coming soon' },
       });
       expect(supabase.auth.signInWithOAuth).not.toHaveBeenCalled();
       expect(supabase.auth.signInWithOtp).not.toHaveBeenCalled();
@@ -46,7 +57,7 @@ describe('Auth API module', () => {
       const result = await signIn('google');
       expect(result).toEqual({
         data: null,
-        error: { code: 'UNKNOWN', message: 'Network error' }
+        error: { code: 'UNKNOWN', message: 'Network error' },
       });
     });
   });
@@ -70,7 +81,10 @@ describe('Auth API module', () => {
   describe('getSession', () => {
     it('returns session', async () => {
       const mockSession = { access_token: '123' };
-      (supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: mockSession }, error: null });
+      (supabase.auth.getSession as jest.Mock).mockResolvedValue({
+        data: { session: mockSession },
+        error: null,
+      });
       const result = await getSession();
       expect(result.data).toBe(mockSession);
     });
@@ -80,13 +94,13 @@ describe('Auth API module', () => {
     it('subscribes and returns an unsubscribe function', () => {
       const mockUnsubscribe = jest.fn();
       (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-        data: { subscription: { unsubscribe: mockUnsubscribe } }
+        data: { subscription: { unsubscribe: mockUnsubscribe } },
       });
       const callback = jest.fn();
       const unsubscribe = onAuthStateChange(callback);
-      
+
       expect(supabase.auth.onAuthStateChange).toHaveBeenCalled();
-      
+
       const authChangeCallback = (supabase.auth.onAuthStateChange as jest.Mock).mock.calls[0][0];
       authChangeCallback('SIGNED_IN', { access_token: '123' });
       expect(callback).toHaveBeenCalledWith({ access_token: '123' });

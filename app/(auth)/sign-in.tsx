@@ -16,7 +16,7 @@ export default function SignInScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-white p-6">
       <Text className="text-4xl font-bold text-indigo-500 mb-2">Halvy</Text>
-      <Text className="text-sm text-gray-500 mb-8">A chat app with financial intelligence</Text>
+      <Text className="text-sm text-gray-500 mb-8">Split expenses, not friendships</Text>
 
       <Pressable 
         onPress={handleGoogleSignIn}

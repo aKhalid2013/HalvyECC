@@ -24,16 +24,10 @@ const initialState = {
   error: null,
 };
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   ...initialState,
-  setSession: (session) => set((state) => ({ 
-    session, 
-    isAuthenticated: session !== null && state.user !== null 
-  })),
-  setUser: (user) => set((state) => ({ 
-    user, 
-    isAuthenticated: state.session !== null && user !== null 
-  })),
+  setSession: (session) => set({ session, isAuthenticated: session !== null && get().user !== null }),
+  setUser: (user) => set({ user, isAuthenticated: get().session !== null && user !== null }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   reset: () => set(initialState),
