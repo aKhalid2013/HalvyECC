@@ -1,6 +1,6 @@
-import { test as setup, expect } from '@playwright/test';
-import path from 'path';
+import { expect, test as setup } from '@playwright/test';
 import fs from 'fs';
+import path from 'path';
 
 const TEST_EMAIL = process.env.TEST_USER_EMAIL || 'testuser@halvy.app';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'http://localhost:54321';
