@@ -1,7 +1,7 @@
+import type { Session } from '@supabase/supabase-js';
 import { create } from 'zustand';
-import { Session } from '@supabase/supabase-js';
-import { User } from '../types/models';
-import { ApiError } from '../types/api';
+import type { ApiError } from '../types/api';
+import type { User } from '../types/models';
 
 export interface AuthState {
   session: Session | null;
@@ -26,7 +26,8 @@ const initialState = {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   ...initialState,
-  setSession: (session) => set({ session, isAuthenticated: session !== null && get().user !== null }),
+  setSession: (session) =>
+    set({ session, isAuthenticated: session !== null && get().user !== null }),
   setUser: (user) => set({ user, isAuthenticated: get().session !== null && user !== null }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),

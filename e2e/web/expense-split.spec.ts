@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 // Reuse auth state saved by auth.setup.ts
 test.use({ storageState: 'e2e/.auth/user.json' });

@@ -1,8 +1,7 @@
-import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
-import MagicLinkScreen from '../magic-link';
-import { signIn } from '../../../src/api/auth';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
+import { signIn } from '../../../src/api/auth';
+import MagicLinkScreen from '../magic-link';
 
 jest.mock('../../../src/api/auth', () => ({
   signIn: jest.fn(),
@@ -14,7 +13,7 @@ jest.mock('expo-router', () => ({
 
 describe('MagicLinkScreen', () => {
   const mockBack = jest.fn();
-  
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue({ back: mockBack });
@@ -29,7 +28,7 @@ describe('MagicLinkScreen', () => {
   it('Send button is disabled for invalid email', () => {
     const { getByTestId, getByPlaceholderText } = render(<MagicLinkScreen />);
     const sendButton = getByTestId('send-magic-link-btn');
-    
+
     fireEvent.changeText(getByPlaceholderText('Email'), 'invalid-email');
     expect(sendButton.props.accessibilityState.disabled).toBe(true);
   });
@@ -37,7 +36,7 @@ describe('MagicLinkScreen', () => {
   it('transitions to confirmation state on success', async () => {
     (signIn as jest.Mock).mockResolvedValue({ data: {}, error: null });
     const { getByPlaceholderText, getByText, queryByPlaceholderText } = render(<MagicLinkScreen />);
-    
+
     fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
     await act(async () => {
       fireEvent.press(getByText('Send Magic Link'));
@@ -49,12 +48,12 @@ describe('MagicLinkScreen', () => {
   });
 
   it('shows error message on failure', async () => {
-    (signIn as jest.Mock).mockResolvedValue({ 
-      data: null, 
-      error: { message: 'Failed to send' } 
+    (signIn as jest.Mock).mockResolvedValue({
+      data: null,
+      error: { message: 'Failed to send' },
     });
     const { getByPlaceholderText, getByText } = render(<MagicLinkScreen />);
-    
+
     fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
     await act(async () => {
       fireEvent.press(getByText('Send Magic Link'));

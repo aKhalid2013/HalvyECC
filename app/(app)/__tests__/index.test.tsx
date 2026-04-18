@@ -1,9 +1,8 @@
-import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-import HomeScreen from '../index';
-import { useAuthStore } from '../../../src/stores/authStore';
-import { signOut } from '../../../src/api/auth';
+import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
+import { signOut } from '../../../src/api/auth';
+import { useAuthStore } from '../../../src/stores/authStore';
+import HomeScreen from '../index';
 
 jest.mock('../../../src/stores/authStore', () => ({
   useAuthStore: jest.fn(),
@@ -42,9 +41,9 @@ describe('HomeScreen (Authenticated)', () => {
   it('calls signOut and resets store on Sign Out press', async () => {
     (signOut as jest.Mock).mockResolvedValue({ error: null });
     const { getByText } = render(<HomeScreen />);
-    
+
     await fireEvent.press(getByText('Sign Out'));
-    
+
     expect(signOut).toHaveBeenCalled();
     expect(mockReset).toHaveBeenCalled();
     expect(mockReplace).toHaveBeenCalledWith('/(auth)/sign-in');

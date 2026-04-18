@@ -1,8 +1,8 @@
-import React from 'react';
 import { render } from '@testing-library/react-native';
-import { useSegments, Redirect, Stack } from 'expo-router';
-import RootLayout from '../_layout';
+import { Redirect, Stack, useSegments } from 'expo-router';
+import type React from 'react';
 import { useAuthStore } from '../../src/stores/authStore';
+import RootLayout from '../_layout';
 
 jest.mock('expo-router', () => ({
   Stack: Object.assign(

@@ -1,6 +1,5 @@
-import React from 'react';
-import { renderHook } from '@testing-library/react-native';
 import { useQueryClient } from '@tanstack/react-query';
+import { renderHook } from '@testing-library/react-native';
 import { QueryProvider } from '../QueryProvider';
 
 describe('QueryProvider', () => {

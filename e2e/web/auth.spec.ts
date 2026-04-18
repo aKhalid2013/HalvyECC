@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Authentication Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -24,7 +24,7 @@ test.describe('Authentication Flow', () => {
 
     await expect(page.getByText('Check your email')).toBeVisible();
     await expect(page.getByText('test@example.com')).toBeVisible();
-    
+
     await page.getByText('Back to sign-in').click();
     await expect(page.getByText('Continue with Google')).toBeVisible();
   });

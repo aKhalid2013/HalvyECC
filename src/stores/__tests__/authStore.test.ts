@@ -1,7 +1,7 @@
+import type { Session } from '@supabase/supabase-js';
 import { act, renderHook } from '@testing-library/react-native';
+import type { User } from '../../types/models';
 import { useAuthStore } from '../authStore';
-import { Session } from '@supabase/supabase-js';
-import { User } from '../../types/models';
 
 describe('Auth Zustand store', () => {
   beforeEach(() => {
@@ -101,11 +101,11 @@ describe('Auth Zustand store', () => {
 
   it('state updates are immutable (previous state object not mutated)', () => {
     const state1 = useAuthStore.getState();
-    
+
     act(() => {
       state1.setLoading(false);
     });
-    
+
     const state2 = useAuthStore.getState();
     expect(state1).not.toBe(state2);
     expect(state1.isLoading).toBe(true); // Should remain true in the old reference

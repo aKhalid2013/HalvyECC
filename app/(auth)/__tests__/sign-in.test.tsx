@@ -1,9 +1,8 @@
-import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-import { Alert } from 'react-native';
-import SignInScreen from '../sign-in';
-import { signIn } from '../../../src/api/auth';
+import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
+import { Alert } from 'react-native';
+import { signIn } from '../../../src/api/auth';
+import SignInScreen from '../sign-in';
 
 jest.mock('../../../src/api/auth', () => ({
   signIn: jest.fn(),
@@ -15,7 +14,7 @@ jest.mock('expo-router', () => ({
 
 describe('SignInScreen', () => {
   const mockPush = jest.fn();
-  
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
@@ -49,9 +48,9 @@ describe('SignInScreen', () => {
 
   it('shows Alert on signIn error', async () => {
     const spy = jest.spyOn(Alert, 'alert');
-    (signIn as jest.Mock).mockResolvedValue({ 
-      data: null, 
-      error: { message: 'OAuth failed' } 
+    (signIn as jest.Mock).mockResolvedValue({
+      data: null,
+      error: { message: 'OAuth failed' },
     });
     const { getByText } = render(<SignInScreen />);
     await fireEvent.press(getByText('Continue with Google'));

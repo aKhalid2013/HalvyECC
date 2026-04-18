@@ -1,5 +1,4 @@
 import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 
 jest.mock('@supabase/supabase-js', () => ({
   createClient: jest.fn(() => ({})),
@@ -15,7 +14,7 @@ jest.mock('@/constants/config', () => ({
   config: {
     supabaseUrl: 'https://test.supabase.co',
     supabaseAnonKey: 'test-anon-key',
-  }
+  },
 }));
 
 describe('Supabase Client', () => {
@@ -28,7 +27,7 @@ describe('Supabase Client', () => {
     Platform.OS = 'ios';
     require('../client');
     const { createClient } = require('@supabase/supabase-js');
-    
+
     expect(createClient).toHaveBeenCalledWith(
       'https://test.supabase.co',
       'test-anon-key',
@@ -36,21 +35,21 @@ describe('Supabase Client', () => {
         auth: expect.objectContaining({
           storage: expect.any(Object),
           detectSessionInUrl: false,
-        })
+        }),
       })
     );
-    
+
     const callArgs = (createClient as jest.Mock).mock.calls[0][2];
     const storage = callArgs.auth.storage;
-    
+
     const SecureStoreMock = require('expo-secure-store');
 
     storage.getItem('test-key');
     expect(SecureStoreMock.getItemAsync).toHaveBeenCalledWith('test-key');
-    
+
     storage.setItem('test-key', 'test-val');
     expect(SecureStoreMock.setItemAsync).toHaveBeenCalledWith('test-key', 'test-val');
-    
+
     storage.removeItem('test-key');
     expect(SecureStoreMock.deleteItemAsync).toHaveBeenCalledWith('test-key');
   });
@@ -59,7 +58,7 @@ describe('Supabase Client', () => {
     Platform.OS = 'android';
     require('../client');
     const { createClient } = require('@supabase/supabase-js');
-    
+
     const callArgs = (createClient as jest.Mock).mock.calls[0][2];
     expect(callArgs.auth.storage).toBeDefined();
     expect(callArgs.auth.detectSessionInUrl).toBe(false);
@@ -69,7 +68,7 @@ describe('Supabase Client', () => {
     Platform.OS = 'web';
     require('../client');
     const { createClient } = require('@supabase/supabase-js');
-    
+
     const callArgs = (createClient as jest.Mock).mock.calls[0][2];
     expect(callArgs.auth.storage).toBeUndefined();
     expect(callArgs.auth.detectSessionInUrl).toBe(true);

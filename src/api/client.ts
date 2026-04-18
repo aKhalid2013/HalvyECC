@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 import { config } from '@/constants/config';
 import type { Database } from '@/types/database';
 
@@ -11,15 +11,11 @@ export const ExpoSecureStoreAdapter = {
   removeItem: (key: string) => SecureStore.deleteItemAsync(key),
 };
 
-export const supabase = createClient<Database>(
-  config.supabaseUrl,
-  config.supabaseAnonKey,
-  {
-    auth: {
-      storage: Platform.OS === 'web' ? undefined : ExpoSecureStoreAdapter,
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: Platform.OS === 'web',
-    },
-  }
-);
+export const supabase = createClient<Database>(config.supabaseUrl, config.supabaseAnonKey, {
+  auth: {
+    storage: Platform.OS === 'web' ? undefined : ExpoSecureStoreAdapter,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: Platform.OS === 'web',
+  },
+});
