@@ -24,7 +24,17 @@
     },
     "workflow_phase": {
       "type": "string",
-      "enum": ["brainstorm", "spec_writing", "feasibility", "plan", "tdd", "code-review", "security-scan", "verify", "other"]
+      "enum": [
+        "brainstorm",
+        "spec_writing",
+        "feasibility",
+        "plan",
+        "tdd",
+        "code-review",
+        "security-scan",
+        "verify",
+        "other"
+      ]
     },
     "duration_minutes": {
       "type": "integer",
@@ -50,12 +60,26 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["hallucination", "loop", "wrong_pattern", "missing_context", "rule_violation", "tool_failure", "other"]
+            "enum": [
+              "hallucination",
+              "loop",
+              "wrong_pattern",
+              "missing_context",
+              "rule_violation",
+              "tool_failure",
+              "other"
+            ]
           },
           "description": { "type": "string" },
           "resolution": {
             "type": "string",
-            "enum": ["manual_correction", "agent_self_corrected", "escalated", "workaround", "unresolved"]
+            "enum": [
+              "manual_correction",
+              "agent_self_corrected",
+              "escalated",
+              "workaround",
+              "unresolved"
+            ]
           },
           "time_lost_minutes": {
             "type": "integer",

@@ -1,0 +1,7 @@
+appId: com.halvy.app
+# NOTE: Full sign-out flow (welcome screen → tap Sign Out) requires a live authenticated
+# Supabase session. This flow verifies the auth gate: unauthenticated launch → sign-in screen.
+---
+- launchApp
+- assertVisible: "Continue with Google"
+- assertVisible: "Sign in with Magic Link"

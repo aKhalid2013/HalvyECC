@@ -10,8 +10,6 @@
   "human_interventions": 0,
   "issues": [],
   "rules_violated": [],
-  "agent_strengths": [
-    "Feedback pipeline infrastructure created correctly"
-  ],
+  "agent_strengths": ["Feedback pipeline infrastructure created correctly"],
   "notes": "Setup session: added feedback pipeline, fixed CI branch trigger, created context files. This is a seed log to validate the aggregation script."
 }

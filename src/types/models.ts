@@ -4,16 +4,16 @@ export type MemberRole = 'owner' | 'admin' | 'member';
 export type GroupType = 'dinner' | 'trip' | 'house';
 export type ExpenseEntryMethod = 'manual' | 'ocr' | 'voice' | 'standing_order';
 export type MessageType = 'user_text' | 'expense_card' | 'system_event' | 'expense_reply';
-export type NotificationType = 
-  | 'expense_added' 
-  | 'expense_edited' 
-  | 'expense_deleted' 
-  | 'payment_recorded' 
-  | 'mention' 
-  | 'item_reassigned' 
-  | 'standing_order_fired' 
-  | 'standing_order_failed' 
-  | 'placeholder_claim_available' 
+export type NotificationType =
+  | 'expense_added'
+  | 'expense_edited'
+  | 'expense_deleted'
+  | 'payment_recorded'
+  | 'mention'
+  | 'item_reassigned'
+  | 'standing_order_fired'
+  | 'standing_order_failed'
+  | 'placeholder_claim_available'
   | 'group_invite';
 export type RecurrenceUnit = 'day' | 'week' | 'month' | 'year';
 export type StandingOrderSplitMode = 'fixed' | 'collaborative';

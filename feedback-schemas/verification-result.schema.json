@@ -3,7 +3,16 @@
   "title": "Verification Result",
   "description": "Structured result from a spec-verifier run",
   "type": "object",
-  "required": ["spec_id", "date", "platform", "verdict", "criteria_total", "criteria_pass", "criteria_fail", "criteria_partial"],
+  "required": [
+    "spec_id",
+    "date",
+    "platform",
+    "verdict",
+    "criteria_total",
+    "criteria_pass",
+    "criteria_fail",
+    "criteria_partial"
+  ],
   "properties": {
     "spec_id": {
       "type": "string",

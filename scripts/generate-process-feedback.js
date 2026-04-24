@@ -6,24 +6,26 @@
 // Usage: node scripts/generate-process-feedback.js
 // Trigger: GitHub Action (process-feedback-sync.yml) or manual
 
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 
-const ROOT     = path.resolve(__dirname, '..');
-const OUTPUT   = path.join(ROOT, 'docs', 'PROCESS-FEEDBACK.md');
+const ROOT = path.resolve(__dirname, '..');
+const OUTPUT = path.join(ROOT, 'docs', 'PROCESS-FEEDBACK.md');
 const SESSIONS = path.join(ROOT, 'feedback-logs', 'sessions');
-const VERIFS   = path.join(ROOT, 'feedback-logs', 'verifications');
-const OBS      = path.join(ROOT, 'feedback-logs', 'observations');
+const VERIFS = path.join(ROOT, 'feedback-logs', 'verifications');
+const OBS = path.join(ROOT, 'feedback-logs', 'observations');
 
 function readJsonDir(dir) {
   if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir)
-    .filter(f => f.endsWith('.json'))
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith('.json'))
     .sort()
-    .map(f => {
+    .map((f) => {
       const filePath = path.join(dir, f);
-      try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); }
-      catch (err) {
+      try {
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      } catch (err) {
         console.warn('Warning: failed to parse JSON file ' + filePath + ': ' + err.message);
         return null;
       }
@@ -43,14 +45,14 @@ function sessionStats(sessions) {
   const allIssues = [];
   const allViolations = [];
 
-  sessions.forEach(s => {
+  sessions.forEach((s) => {
     platforms[s.platform] = (platforms[s.platform] || 0) + 1;
     phases[s.workflow_phase] = (phases[s.workflow_phase] || 0) + 1;
     outcomes[s.outcome] = (outcomes[s.outcome] || 0) + 1;
     totalDuration += s.duration_minutes || 0;
     totalInterventions += s.human_interventions || 0;
-    (s.issues || []).forEach(i => allIssues.push(i));
-    (s.rules_violated || []).forEach(r => allViolations.push(r));
+    (s.issues || []).forEach((i) => allIssues.push(i));
+    (s.rules_violated || []).forEach((r) => allViolations.push(r));
   });
 
   const avgDuration = Math.round(totalDuration / total);
@@ -58,17 +60,25 @@ function sessionStats(sessions) {
   const lines = [
     '- **Total sessions:** ' + total,
     '- **Average duration:** ' + avgDuration + ' minutes',
-    '- **Human interventions:** ' + totalInterventions + ' total (' + (totalInterventions / total).toFixed(1) + ' per session)',
+    '- **Human interventions:** ' +
+      totalInterventions +
+      ' total (' +
+      (totalInterventions / total).toFixed(1) +
+      ' per session)',
     '',
     '**By platform:**',
   ];
-  Object.entries(platforms).sort((a, b) => b[1] - a[1]).forEach(([k, v]) => {
-    lines.push('- ' + k + ': ' + v + (v === 1 ? ' session' : ' sessions'));
-  });
+  Object.entries(platforms)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([k, v]) => {
+      lines.push('- ' + k + ': ' + v + (v === 1 ? ' session' : ' sessions'));
+    });
   lines.push('', '**By workflow phase:**');
-  Object.entries(phases).sort((a, b) => b[1] - a[1]).forEach(([k, v]) => {
-    lines.push('- ' + k + ': ' + v + (v === 1 ? ' session' : ' sessions'));
-  });
+  Object.entries(phases)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([k, v]) => {
+      lines.push('- ' + k + ': ' + v + (v === 1 ? ' session' : ' sessions'));
+    });
   lines.push('', '**By outcome:**');
   Object.entries(outcomes)
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
@@ -79,29 +89,35 @@ function sessionStats(sessions) {
   if (allIssues.length) {
     const issueTypes = {};
     let totalTimeLost = 0;
-    allIssues.forEach(i => {
+    allIssues.forEach((i) => {
       issueTypes[i.type] = (issueTypes[i.type] || 0) + 1;
       totalTimeLost += i.time_lost_minutes || 0;
     });
     lines.push('', '**Issue frequency:**', '');
     lines.push('| Type | Count | Time lost |');
     lines.push('|------|-------|-----------|');
-    Object.entries(issueTypes).sort((a, b) => b[1] - a[1]).forEach(([type, count]) => {
-      const lost = allIssues.filter(i => i.type === type).reduce((sum, i) => sum + (i.time_lost_minutes || 0), 0);
-      lines.push('| ' + type + ' | ' + count + ' | ' + lost + ' min |');
-    });
+    Object.entries(issueTypes)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([type, count]) => {
+        const lost = allIssues
+          .filter((i) => i.type === type)
+          .reduce((sum, i) => sum + (i.time_lost_minutes || 0), 0);
+        lines.push('| ' + type + ' | ' + count + ' | ' + lost + ' min |');
+      });
     lines.push('', '**Total time lost to issues:** ' + totalTimeLost + ' minutes');
   }
 
   if (allViolations.length) {
     const violCounts = {};
-    allViolations.forEach(v => violCounts[v] = (violCounts[v] || 0) + 1);
+    allViolations.forEach((v) => (violCounts[v] = (violCounts[v] || 0) + 1));
     lines.push('', '**Rule violations:**', '');
     lines.push('| Rule | Violations |');
     lines.push('|------|------------|');
-    Object.entries(violCounts).sort((a, b) => b[1] - a[1]).forEach(([rule, count]) => {
-      lines.push('| ' + rule + ' | ' + count + ' |');
-    });
+    Object.entries(violCounts)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([rule, count]) => {
+        lines.push('| ' + rule + ' | ' + count + ' |');
+      });
   }
 
   return lines.join('\n');
@@ -114,19 +130,16 @@ function verificationStats(verifs) {
   const verdicts = {};
   const failCategories = {};
 
-  verifs.forEach(v => {
+  verifs.forEach((v) => {
     verdicts[v.verdict] = (verdicts[v.verdict] || 0) + 1;
-    (v.failure_categories || []).forEach(c => {
+    (v.failure_categories || []).forEach((c) => {
       failCategories[c] = (failCategories[c] || 0) + 1;
     });
   });
 
   const passRate = verdicts['PASS'] ? Math.round((verdicts['PASS'] / total) * 100) : 0;
 
-  const lines = [
-    '- **Total verifications:** ' + total,
-    '- **PASS rate:** ' + passRate + '%',
-  ];
+  const lines = ['- **Total verifications:** ' + total, '- **PASS rate:** ' + passRate + '%'];
   const VERDICT_ORDER = { PASS: 0, PARTIAL: 1, FAIL: 2 };
   Object.entries(verdicts)
     .sort((a, b) => (VERDICT_ORDER[a[0]] ?? 3) - (VERDICT_ORDER[b[0]] ?? 3))
@@ -138,9 +151,11 @@ function verificationStats(verifs) {
     lines.push('', '**Failure categories:**', '');
     lines.push('| Category | Occurrences |');
     lines.push('|----------|-------------|');
-    Object.entries(failCategories).sort((a, b) => b[1] - a[1]).forEach(([cat, count]) => {
-      lines.push('| ' + cat + ' | ' + count + ' |');
-    });
+    Object.entries(failCategories)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([cat, count]) => {
+        lines.push('| ' + cat + ' | ' + count + ' |');
+      });
   }
 
   return lines.join('\n');
@@ -161,7 +176,7 @@ function observationSummary(observations) {
       if (titleDiff !== 0) return titleDiff;
       return (a.category || '').localeCompare(b.category || '');
     })
-    .map(o => {
+    .map((o) => {
       const lines = ['### [' + (o.severity || 'medium').toUpperCase() + '] ' + o.title];
       lines.push('**Category:** ' + o.category + ' | **Date:** ' + o.date);
       lines.push('', o.description);
@@ -178,39 +193,77 @@ function generateRecommendations(sessions, verifs, observations) {
   const recs = [];
 
   const issueTypes = {};
-  sessions.forEach(s => (s.issues || []).forEach(i => {
-    issueTypes[i.type] = (issueTypes[i.type] || 0) + 1;
-  }));
-  Object.entries(issueTypes).filter(([_, count]) => count >= 3).forEach(([type, count]) => {
-    recs.push('- **Recurring issue: ' + type + '** (' + count + ' occurrences) — investigate root cause in skills/rules');
-  });
+  sessions.forEach((s) =>
+    (s.issues || []).forEach((i) => {
+      issueTypes[i.type] = (issueTypes[i.type] || 0) + 1;
+    })
+  );
+  Object.entries(issueTypes)
+    .filter(([_, count]) => count >= 3)
+    .forEach(([type, count]) => {
+      recs.push(
+        '- **Recurring issue: ' +
+          type +
+          '** (' +
+          count +
+          ' occurrences) — investigate root cause in skills/rules'
+      );
+    });
 
   if (verifs.length >= 3) {
-    const passCount = verifs.filter(v => v.verdict === 'PASS').length;
+    const passCount = verifs.filter((v) => v.verdict === 'PASS').length;
     const rate = Math.round((passCount / verifs.length) * 100);
     if (rate < 70) {
-      recs.push('- **Low verification PASS rate (' + rate + '%)** — review spec template clarity and TDD enforcement');
+      recs.push(
+        '- **Low verification PASS rate (' +
+          rate +
+          '%)** — review spec template clarity and TDD enforcement'
+      );
     }
   }
 
   if (sessions.length >= 3) {
-    const avgInterventions = sessions.reduce((s, x) => s + (x.human_interventions || 0), 0) / sessions.length;
+    const avgInterventions =
+      sessions.reduce((s, x) => s + (x.human_interventions || 0), 0) / sessions.length;
     if (avgInterventions > 2) {
-      recs.push('- **High human intervention rate (' + avgInterventions.toFixed(1) + '/session)** — agents may need better context loading');
+      recs.push(
+        '- **High human intervention rate (' +
+          avgInterventions.toFixed(1) +
+          '/session)** — agents may need better context loading'
+      );
     }
   }
 
-  observations.filter(o => o.severity === 'critical' || o.severity === 'high').forEach(o => {
-    recs.push('- **[' + o.severity.toUpperCase() + '] ' + o.title + '** — ' + (o.proposed_fix || 'needs investigation'));
-  });
+  observations
+    .filter((o) => o.severity === 'critical' || o.severity === 'high')
+    .forEach((o) => {
+      recs.push(
+        '- **[' +
+          o.severity.toUpperCase() +
+          '] ' +
+          o.title +
+          '** — ' +
+          (o.proposed_fix || 'needs investigation')
+      );
+    });
 
   const violCounts = {};
-  sessions.forEach(s => (s.rules_violated || []).forEach(r => {
-    violCounts[r] = (violCounts[r] || 0) + 1;
-  }));
-  Object.entries(violCounts).filter(([_, count]) => count >= 2).forEach(([rule, count]) => {
-    recs.push('- **Repeated rule violation: ' + rule + '** (' + count + 'x) — consider promoting to a blocking check');
-  });
+  sessions.forEach((s) =>
+    (s.rules_violated || []).forEach((r) => {
+      violCounts[r] = (violCounts[r] || 0) + 1;
+    })
+  );
+  Object.entries(violCounts)
+    .filter(([_, count]) => count >= 2)
+    .forEach(([rule, count]) => {
+      recs.push(
+        '- **Repeated rule violation: ' +
+          rule +
+          '** (' +
+          count +
+          'x) — consider promoting to a blocking check'
+      );
+    });
 
   return recs.length ? recs.join('\n') : '> Not enough data yet to generate recommendations.\n';
 }

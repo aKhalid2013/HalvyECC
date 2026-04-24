@@ -11,7 +11,14 @@
     },
     "category": {
       "type": "string",
-      "enum": ["process", "tooling", "agent_behavior", "documentation", "workflow", "cross_platform"]
+      "enum": [
+        "process",
+        "tooling",
+        "agent_behavior",
+        "documentation",
+        "workflow",
+        "cross_platform"
+      ]
     },
     "title": {
       "type": "string",

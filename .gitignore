@@ -20,3 +20,12 @@ npm-debug.*
 *.mobileprovision
 e2e/.auth/
 .env.test
+
+# Test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# Build artifacts
+android/
+ios/

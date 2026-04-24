@@ -5,14 +5,14 @@
 //   2. docs/specs/**/*.report.md                         -> spec-verifier output
 //   3. docs/phases/README.md (or phasing-strategy.md)   -> phase completion %
 
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 
-const ROOT    = path.resolve(__dirname, '..');
-const OUTPUT  = path.join(ROOT, 'docs', 'PO-CONTEXT.md');
-const INDEX   = path.join(ROOT, 'docs', 'specs', '_INDEX.md');
+const ROOT = path.resolve(__dirname, '..');
+const OUTPUT = path.join(ROOT, 'docs', 'PO-CONTEXT.md');
+const INDEX = path.join(ROOT, 'docs', 'specs', '_INDEX.md');
 const PHASES_PRIMARY = path.join(ROOT, 'docs', 'phases', 'README.md');
-const PHASES_ALT     = path.join(ROOT, 'docs', 'phases', 'phasing-strategy.md');
+const PHASES_ALT = path.join(ROOT, 'docs', 'phases', 'phasing-strategy.md');
 const PHASES = fs.existsSync(PHASES_PRIMARY) ? PHASES_PRIMARY : PHASES_ALT;
 const REPORTS = path.join(ROOT, 'docs', 'specs');
 
@@ -20,9 +20,7 @@ const REPORTS = path.join(ROOT, 'docs', 'specs');
 function extractSpecIndex() {
   if (!fs.existsSync(INDEX)) return '> docs/specs/_INDEX.md not found.\n';
   const lines = fs.readFileSync(INDEX, 'utf8').split('\n');
-  return lines
-    .filter(l => /^(#|##|\|)/.test(l.trim()))
-    .join('\n');
+  return lines.filter((l) => /^(#|##|\|)/.test(l.trim())).join('\n');
 }
 
 // -- 2. Verification Reports
@@ -39,30 +37,37 @@ function extractVerificationSummaries() {
   walk(REPORTS);
   if (!reports.length) return '> No verification reports found yet.\n';
 
-  return reports.map(f => {
-    const content = fs.readFileSync(f, 'utf8');
-    const specId  = content.match(/SPEC-(\d+)/)?.[0] ?? path.basename(f);
-    const verdict = content.match(/\*\*Verdict:\*\*\s*(.+)/)?.[1] ?? 'unknown';
-    const issues  = (content.match(/\|\s*(FAIL|PARTIAL)\s*\|.+/g) ?? [])
-                      .map(l => '  - ' + l.trim()).join('\n');
-    return '### ' + specId + '\n**Verdict:** ' + verdict + '\n' + (issues || '  *(no open issues)*');
-  }).join('\n\n');
+  return reports
+    .map((f) => {
+      const content = fs.readFileSync(f, 'utf8');
+      const specId = content.match(/SPEC-(\d+)/)?.[0] ?? path.basename(f);
+      const verdict = content.match(/\*\*Verdict:\*\*\s*(.+)/)?.[1] ?? 'unknown';
+      const issues = (content.match(/\|\s*(FAIL|PARTIAL)\s*\|.+/g) ?? [])
+        .map((l) => '  - ' + l.trim())
+        .join('\n');
+      return (
+        '### ' + specId + '\n**Verdict:** ' + verdict + '\n' + (issues || '  *(no open issues)*')
+      );
+    })
+    .join('\n\n');
 }
 
 // -- 3. Phase Completion
 function extractPhaseCompletion() {
   if (!fs.existsSync(PHASES)) return '> ' + path.relative(ROOT, PHASES) + ' not found.\n';
-  const text   = fs.readFileSync(PHASES, 'utf8');
+  const text = fs.readFileSync(PHASES, 'utf8');
   const phases = text.split(/^## Phase \d/m).slice(1);
-  const phaseHeaders = [...text.matchAll(/^## (Phase \d[^\n]*)/gm)].map(m => m[1]);
+  const phaseHeaders = [...text.matchAll(/^## (Phase \d[^\n]*)/gm)].map((m) => m[1]);
 
-  return phaseHeaders.map((header, i) => {
-    const block = phases[i] ?? '';
-    const done  = (block.match(/- \[x\]/gi) ?? []).length;
-    const total = (block.match(/- \[(x| )\]/gi) ?? []).length;
-    const pct   = total ? Math.round((done / total) * 100) : 0;
-    return '| ' + header + ' | ' + done + '/' + total + ' | ' + pct + '% |';
-  }).join('\n');
+  return phaseHeaders
+    .map((header, i) => {
+      const block = phases[i] ?? '';
+      const done = (block.match(/- \[x\]/gi) ?? []).length;
+      const total = (block.match(/- \[(x| )\]/gi) ?? []).length;
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      return '| ' + header + ' | ' + done + '/' + total + ' | ' + pct + '% |';
+    })
+    .join('\n');
 }
 
 // -- Assemble

@@ -3,7 +3,9 @@ module.exports = {
   passWithNoTests: true,
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.css$': '<rootDir>/__mocks__/styleMock.js',
   },
+  testPathIgnorePatterns: ['/node_modules/', '/e2e/'],
   transformIgnorePatterns: [
     'node_modules/(?!(' +
       'expo|' +
@@ -20,6 +22,6 @@ module.exports = {
       'react-native-reanimated|' +
       'react-native-safe-area-context|' +
       'react-native-screens' +
-    ')/)',
+      ')/)',
   ],
 };
