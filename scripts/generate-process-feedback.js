@@ -6,8 +6,8 @@
 // Usage: node scripts/generate-process-feedback.js
 // Trigger: GitHub Action (process-feedback-sync.yml) or manual
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUTPUT = path.join(ROOT, 'docs', 'PROCESS-FEEDBACK.md');
@@ -25,8 +25,7 @@ function readJsonDir(dir) {
       const filePath = path.join(dir, f);
       try {
         return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      } catch (err) {
-        console.warn('Warning: failed to parse JSON file ' + filePath + ': ' + err.message);
+      } catch (_err) {
         return null;
       }
     })
@@ -51,15 +50,15 @@ function sessionStats(sessions) {
     outcomes[s.outcome] = (outcomes[s.outcome] || 0) + 1;
     totalDuration += s.duration_minutes || 0;
     totalInterventions += s.human_interventions || 0;
-    (s.issues || []).forEach((i) => allIssues.push(i));
-    (s.rules_violated || []).forEach((r) => allViolations.push(r));
+    for (const i of s.issues || []) allIssues.push(i);
+    for (const r of s.rules_violated || []) allViolations.push(r);
   });
 
   const avgDuration = Math.round(totalDuration / total);
 
   const lines = [
-    '- **Total sessions:** ' + total,
-    '- **Average duration:** ' + avgDuration + ' minutes',
+    `- **Total sessions:** ${total}`,
+    `- **Average duration:** ${avgDuration} minutes`,
     '- **Human interventions:** ' +
       totalInterventions +
       ' total (' +
@@ -71,19 +70,19 @@ function sessionStats(sessions) {
   Object.entries(platforms)
     .sort((a, b) => b[1] - a[1])
     .forEach(([k, v]) => {
-      lines.push('- ' + k + ': ' + v + (v === 1 ? ' session' : ' sessions'));
+      lines.push(`- ${k}: ${v}${v === 1 ? ' session' : ' sessions'}`);
     });
   lines.push('', '**By workflow phase:**');
   Object.entries(phases)
     .sort((a, b) => b[1] - a[1])
     .forEach(([k, v]) => {
-      lines.push('- ' + k + ': ' + v + (v === 1 ? ' session' : ' sessions'));
+      lines.push(`- ${k}: ${v}${v === 1 ? ' session' : ' sessions'}`);
     });
   lines.push('', '**By outcome:**');
   Object.entries(outcomes)
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .forEach(([k, v]) => {
-      lines.push('- ' + k + ': ' + v);
+      lines.push(`- ${k}: ${v}`);
     });
 
   if (allIssues.length) {
@@ -102,21 +101,23 @@ function sessionStats(sessions) {
         const lost = allIssues
           .filter((i) => i.type === type)
           .reduce((sum, i) => sum + (i.time_lost_minutes || 0), 0);
-        lines.push('| ' + type + ' | ' + count + ' | ' + lost + ' min |');
+        lines.push(`| ${type} | ${count} | ${lost} min |`);
       });
-    lines.push('', '**Total time lost to issues:** ' + totalTimeLost + ' minutes');
+    lines.push('', `**Total time lost to issues:** ${totalTimeLost} minutes`);
   }
 
   if (allViolations.length) {
     const violCounts = {};
-    allViolations.forEach((v) => (violCounts[v] = (violCounts[v] || 0) + 1));
+    for (const v of allViolations) {
+      violCounts[v] = (violCounts[v] || 0) + 1;
+    }
     lines.push('', '**Rule violations:**', '');
     lines.push('| Rule | Violations |');
     lines.push('|------|------------|');
     Object.entries(violCounts)
       .sort((a, b) => b[1] - a[1])
       .forEach(([rule, count]) => {
-        lines.push('| ' + rule + ' | ' + count + ' |');
+        lines.push(`| ${rule} | ${count} |`);
       });
   }
 
@@ -137,14 +138,14 @@ function verificationStats(verifs) {
     });
   });
 
-  const passRate = verdicts['PASS'] ? Math.round((verdicts['PASS'] / total) * 100) : 0;
+  const passRate = verdicts.PASS ? Math.round((verdicts.PASS / total) * 100) : 0;
 
-  const lines = ['- **Total verifications:** ' + total, '- **PASS rate:** ' + passRate + '%'];
+  const lines = [`- **Total verifications:** ${total}`, `- **PASS rate:** ${passRate}%`];
   const VERDICT_ORDER = { PASS: 0, PARTIAL: 1, FAIL: 2 };
   Object.entries(verdicts)
     .sort((a, b) => (VERDICT_ORDER[a[0]] ?? 3) - (VERDICT_ORDER[b[0]] ?? 3))
     .forEach(([k, v]) => {
-      lines.push('- ' + k + ': ' + v);
+      lines.push(`- ${k}: ${v}`);
     });
 
   if (Object.keys(failCategories).length) {
@@ -154,7 +155,7 @@ function verificationStats(verifs) {
     Object.entries(failCategories)
       .sort((a, b) => b[1] - a[1])
       .forEach(([cat, count]) => {
-        lines.push('| ' + cat + ' | ' + count + ' |');
+        lines.push(`| ${cat} | ${count} |`);
       });
   }
 
@@ -177,12 +178,12 @@ function observationSummary(observations) {
       return (a.category || '').localeCompare(b.category || '');
     })
     .map((o) => {
-      const lines = ['### [' + (o.severity || 'medium').toUpperCase() + '] ' + o.title];
-      lines.push('**Category:** ' + o.category + ' | **Date:** ' + o.date);
+      const lines = [`### [${(o.severity || 'medium').toUpperCase()}] ${o.title}`];
+      lines.push(`**Category:** ${o.category} | **Date:** ${o.date}`);
       lines.push('', o.description);
-      if (o.proposed_fix) lines.push('', '**Proposed fix:** ' + o.proposed_fix);
-      if (o.related_specs && o.related_specs.length) {
-        lines.push('**Related specs:** ' + o.related_specs.join(', '));
+      if (o.proposed_fix) lines.push('', `**Proposed fix:** ${o.proposed_fix}`);
+      if (o.related_specs?.length) {
+        lines.push(`**Related specs:** ${o.related_specs.join(', ')}`);
       }
       return lines.join('\n');
     })
@@ -193,11 +194,11 @@ function generateRecommendations(sessions, verifs, observations) {
   const recs = [];
 
   const issueTypes = {};
-  sessions.forEach((s) =>
-    (s.issues || []).forEach((i) => {
+  for (const s of sessions) {
+    for (const i of s.issues || []) {
       issueTypes[i.type] = (issueTypes[i.type] || 0) + 1;
-    })
-  );
+    }
+  }
   Object.entries(issueTypes)
     .filter(([_, count]) => count >= 3)
     .forEach(([type, count]) => {
@@ -248,11 +249,11 @@ function generateRecommendations(sessions, verifs, observations) {
     });
 
   const violCounts = {};
-  sessions.forEach((s) =>
-    (s.rules_violated || []).forEach((r) => {
+  for (const s of sessions) {
+    for (const r of s.rules_violated || []) {
       violCounts[r] = (violCounts[r] || 0) + 1;
-    })
-  );
+    }
+  }
   Object.entries(violCounts)
     .filter(([_, count]) => count >= 2)
     .forEach(([rule, count]) => {
@@ -276,7 +277,7 @@ const observations = readJsonDir(OBS);
 
 const output = [
   '# PROCESS-FEEDBACK — AI Dev System Operational Digest',
-  '_Generated: ' + now + ' UTC — do not edit manually_',
+  `_Generated: ${now} UTC — do not edit manually_`,
   '',
   '---',
   '',
@@ -308,4 +309,3 @@ const output = [
 
 fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
 fs.writeFileSync(OUTPUT, output);
-console.log('PROCESS-FEEDBACK.md written to ' + path.relative(ROOT, OUTPUT));

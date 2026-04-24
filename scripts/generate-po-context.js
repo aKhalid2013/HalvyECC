@@ -5,8 +5,8 @@
 //   2. docs/specs/**/*.report.md                         -> spec-verifier output
 //   3. docs/phases/README.md (or phasing-strategy.md)   -> phase completion %
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUTPUT = path.join(ROOT, 'docs', 'PO-CONTEXT.md');
@@ -43,18 +43,16 @@ function extractVerificationSummaries() {
       const specId = content.match(/SPEC-(\d+)/)?.[0] ?? path.basename(f);
       const verdict = content.match(/\*\*Verdict:\*\*\s*(.+)/)?.[1] ?? 'unknown';
       const issues = (content.match(/\|\s*(FAIL|PARTIAL)\s*\|.+/g) ?? [])
-        .map((l) => '  - ' + l.trim())
+        .map((l) => `  - ${l.trim()}`)
         .join('\n');
-      return (
-        '### ' + specId + '\n**Verdict:** ' + verdict + '\n' + (issues || '  *(no open issues)*')
-      );
+      return `### ${specId}\n**Verdict:** ${verdict}\n${issues || '  *(no open issues)*'}`;
     })
     .join('\n\n');
 }
 
 // -- 3. Phase Completion
 function extractPhaseCompletion() {
-  if (!fs.existsSync(PHASES)) return '> ' + path.relative(ROOT, PHASES) + ' not found.\n';
+  if (!fs.existsSync(PHASES)) return `> ${path.relative(ROOT, PHASES)} not found.\n`;
   const text = fs.readFileSync(PHASES, 'utf8');
   const phases = text.split(/^## Phase \d/m).slice(1);
   const phaseHeaders = [...text.matchAll(/^## (Phase \d[^\n]*)/gm)].map((m) => m[1]);
@@ -65,7 +63,7 @@ function extractPhaseCompletion() {
       const done = (block.match(/- \[x\]/gi) ?? []).length;
       const total = (block.match(/- \[(x| )\]/gi) ?? []).length;
       const pct = total ? Math.round((done / total) * 100) : 0;
-      return '| ' + header + ' | ' + done + '/' + total + ' | ' + pct + '% |';
+      return `| ${header} | ${done}/${total} | ${pct}% |`;
     })
     .join('\n');
 }
@@ -75,7 +73,7 @@ const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
 
 const output = [
   '# PO-CONTEXT — Halvy Live Progress Snapshot',
-  '_Generated: ' + now + ' UTC — do not edit manually_',
+  `_Generated: ${now} UTC — do not edit manually_`,
   '',
   '---',
   '',
@@ -103,4 +101,3 @@ const output = [
 
 fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
 fs.writeFileSync(OUTPUT, output);
-console.log('PO-CONTEXT.md written to ' + path.relative(ROOT, OUTPUT));
