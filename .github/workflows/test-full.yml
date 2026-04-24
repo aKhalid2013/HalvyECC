@@ -20,14 +20,7 @@ jobs:
   unit-and-integration:
     name: Unit & Integration Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    services:
-      supabase:
-        image: supabase/supabase-local-dev:latest
-        ports:
-          - 54321:54321
-          - 54322:54322
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -53,13 +46,18 @@ jobs:
         env:
           CI: true
 
-      - name: Wait for Supabase
-        run: |
-          timeout 30 bash -c 'until curl -sf http://localhost:54321/rest/v1/ > /dev/null; do sleep 1; done'
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+        continue-on-error: true
+
+      - name: Start Supabase local stack
+        run: supabase start
         continue-on-error: true
 
       - name: Apply database migrations
-        run: npx supabase db reset --local
+        run: supabase db reset
         continue-on-error: true
 
       - name: Integration tests
