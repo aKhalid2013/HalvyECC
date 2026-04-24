@@ -1,5 +1,5 @@
 # PO-CONTEXT — Halvy Live Progress Snapshot
-_Generated: 2026-04-20 09:47 UTC — do not edit manually_
+_Generated: 2026-04-24 17:18 UTC — do not edit manually_
 
 ---
 
@@ -12,6 +12,7 @@ _Generated: 2026-04-20 09:47 UTC — do not edit manually_
 |----|-------|--------|----------|------------|-------------|--------|
 | SPEC-001 | Expo Infrastructure | ✔️ verified | P0 | M | passed | feat/SPEC-001-expo |
 | SPEC-002 | Database — Project, Schema, Enums, Generics | ✔️ verified | P0 | L | passed | feat/SPEC-002-database |
+| SPEC-003 | Auth — Supabase Auth, Client Singleton, Auth Gate, Sign-In Screens | ✅ completed | P0 | L | passed | feat/SPEC-003-auth-v2 |
 ## Phase 2 — Groups & Chat
 | ID | Title | Status | Priority | Complexity | Feasibility | Branch |
 |----|-------|--------|----------|------------|-------------|--------|
@@ -36,6 +37,16 @@ _Generated: 2026-04-20 09:47 UTC — do not edit manually_
 ### SPEC-002
 **Verdict:** unknown
   *(no open issues)*
+
+### SPEC-003
+**Verdict:** PARTIAL
+  - | PARTIAL | Runtime oracle only. `makeRedirectUri` wired (`src/api/auth.ts:24`). End-to-end requires device/simulator. |
+  - | PARTIAL | `app.config.ts:39` has `scheme: 'halvy'`. End-to-end requires device. |
+  - | PARTIAL | Runtime oracle. Trigger SQL uses `ON CONFLICT DO UPDATE`. Requires device with two providers. |
+  - | PARTIAL | Runtime oracle — requires `supabase status` + dashboard inspection. |
+  - | PARTIAL | Not run — requires build environment. |
+  - | PARTIAL | Not run — requires build environment. |
+  - | PARTIAL | Not run — requires build environment. |
 
 ---
 
