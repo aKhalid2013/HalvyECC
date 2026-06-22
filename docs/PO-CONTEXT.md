@@ -1,5 +1,5 @@
 # PO-CONTEXT — Halvy Live Progress Snapshot
-_Generated: 2026-06-15 13:45 UTC — do not edit manually_
+_Generated: 2026-06-22 13:25 UTC — do not edit manually_
 
 ---
 
